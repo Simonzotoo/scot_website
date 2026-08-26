@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#f8fafc"/>
+  <!-- Image frame -->
+  <rect x="290" y="150" width="220" height="165" rx="10" fill="#e2e8f0"/>
+  <!-- Sun/circle -->
+  <circle cx="340" cy="198" r="20" fill="#cbd5e1"/>
+  <!-- Mountain silhouette -->
+  <polygon points="290,315 352,242 402,285 452,238 510,315" fill="#cbd5e1"/>
+  <!-- Label -->
+  <text x="400" y="370" text-anchor="middle" fill="#94a3b8"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-size="16" font-weight="500">Image coming soon</text>
+</svg>

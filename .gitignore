@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# Uploads
+uploads/
+
+# User profile photos (real people's data, regenerated at runtime)
+assets/images/avatars/
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Node
+node_modules/
+
+# Vendor
+vendor/

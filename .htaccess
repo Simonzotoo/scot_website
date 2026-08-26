@@ -1,0 +1,11 @@
+# Never serve dotfiles (.env, .git, .htaccess itself, etc.)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Composer/npm metadata shouldn't be web-reachable either.
+<FilesMatch "^(composer\.(json|lock)|package(-lock)?\.json|tailwind\.config\.js)$">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes

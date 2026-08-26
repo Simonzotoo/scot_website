@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="196" height="44" viewBox="0 0 196 44">
+  <!-- SC badge (translucent on dark bg) -->
+  <rect x="0" y="0" width="44" height="44" rx="10"
+        fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.20)" stroke-width="1"/>
+  <text x="22" y="29" text-anchor="middle" fill="white"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-size="13" font-weight="900" letter-spacing="0.5">SC</text>
+  <!-- SCOTSA wordmark -->
+  <text x="56" y="21" fill="white"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-size="18" font-weight="900" letter-spacing="0.5">SCOTSA</text>
+  <text x="56" y="35" fill="rgba(147,197,253,0.60)"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-size="10" font-weight="500" letter-spacing="0.4">School of Computing &amp; Technology</text>
+</svg>

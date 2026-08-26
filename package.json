@@ -1,0 +1,13 @@
+{
+  "name": "scotsa-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Build tooling for the SCOTSA Platform's Tailwind CSS — the app itself is plain PHP/XAMPP and needs no Node runtime in production.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/css/tailwind.input.css -o ./assets/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./assets/css/tailwind.input.css -o ./assets/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.13"
+  }
+}

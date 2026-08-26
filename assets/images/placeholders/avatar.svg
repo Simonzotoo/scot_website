@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Navy background matching executive card gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A1F44"/>
+      <stop offset="100%" stop-color="#0d2a5c"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#bg)"/>
+  <!-- Subtle dot grid -->
+  <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+    <circle cx="8" cy="8" r="1" fill="rgba(255,255,255,0.07)"/>
+  </pattern>
+  <rect width="200" height="200" fill="url(#dots)"/>
+  <!-- Person silhouette -->
+  <circle cx="100" cy="74" r="30" fill="rgba(255,255,255,0.22)"/>
+  <ellipse cx="100" cy="175" rx="52" ry="42" fill="rgba(255,255,255,0.16)"/>
+</svg>
