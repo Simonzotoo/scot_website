@@ -19,6 +19,7 @@
             htmlContainer: 'swal-scotsa-body',
             confirmButton: 'swal-scotsa-btn swal-scotsa-btn--primary',
             cancelButton:  'swal-scotsa-btn swal-scotsa-btn--secondary',
+            timerProgressBar: 'swal-scotsa-progress',
         },
         buttonsStyling: false,
         showClass: {
@@ -48,21 +49,28 @@
         },
     });
 
-    /* ── Fire flash messages from PHP session ───────────── */
+    /* ── Fire flash messages from PHP session ─────────────
+       Centered modal (not a corner toast) so it's impossible to miss
+       after an action like an upload — auto-dismisses on its own timer,
+       but a click also closes it immediately. */
     const flashEl = document.getElementById('scotsa-flash');
     if (flashEl) {
         try {
             const flashes = JSON.parse(flashEl.textContent || '[]');
-            flashes.forEach((msg, i) => {
-                setTimeout(() => {
-                    Toast.fire({
+            (async () => {
+                for (const msg of flashes) {
+                    await swal.fire({
                         icon:  msg.type === 'success' ? 'success'
                              : msg.type === 'warning'  ? 'warning'
                              : 'error',
-                        title: msg.message,
+                        title: msg.type === 'success' ? 'Success' : msg.type === 'warning' ? 'Heads up' : 'Something went wrong',
+                        text:  msg.message,
+                        showConfirmButton: false,
+                        timer: 2800,
+                        timerProgressBar: true,
                     });
-                }, i * 600);
-            });
+                }
+            })();
         } catch (_) { /* guard against malformed JSON */ }
     }
 

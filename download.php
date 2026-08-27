@@ -12,7 +12,7 @@ if (rate_limit_hit('download:' . client_ip(), 30, 60)) {
 }
 
 $id = (int) ($_GET['id'] ?? 0);
-$stmt = db()->prepare('SELECT id, title, file_path, original_filename FROM past_questions WHERE id = ? AND status = "active" LIMIT 1');
+$stmt = db()->prepare('SELECT id, title, file_path, original_filename, mime_type FROM past_questions WHERE id = ? AND status = "active" LIMIT 1');
 $stmt->execute([$id]);
 $resource = $stmt->fetch();
 
@@ -29,7 +29,12 @@ if (!$file || !$uploadRoot || strncmp($file, $uploadRoot, strlen($uploadRoot)) !
     exit('File not found.');
 }
 
-$isPreview = isset($_GET['preview']) && $_GET['preview'] === '1';
+$mimeType = $resource['mime_type'] ?: 'application/pdf';
+
+// PDF.js (the only in-browser viewer this app wires up) can only render
+// PDFs, so a preview request for any other file type just falls back to a
+// normal download instead of serving a broken inline response.
+$isPreview = isset($_GET['preview']) && $_GET['preview'] === '1' && $mimeType === 'application/pdf';
 
 if (!$isPreview) {
     db()->prepare('UPDATE past_questions SET download_count = download_count + 1 WHERE id = ?')->execute([$id]);
@@ -38,7 +43,7 @@ if (!$isPreview) {
 }
 
 $safeFilename = preg_replace('/[^\w\-. ]/u', '_', basename($resource['original_filename']));
-header('Content-Type: application/pdf');
+header('Content-Type: ' . $mimeType);
 header('Content-Length: ' . filesize($file));
 header('Content-Disposition: ' . ($isPreview ? 'inline' : 'attachment') . '; filename="' . $safeFilename . '"');
 header('X-Content-Type-Options: nosniff');

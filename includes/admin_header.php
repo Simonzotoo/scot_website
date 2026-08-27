@@ -57,14 +57,17 @@ $__flash    = consume_flash();
                     ? IMAGES_URL . '/logo/logo-light.png'
                     : IMAGES_URL . '/logo/logo-dark.png';
                 ?>
-                <img src="<?= $adminLogoSrc ?>"
-                     alt="" aria-hidden="true"
-                     class="h-10 w-10 flex-shrink-0 object-contain
+                <!-- White backdrop chip so the mark's navy ring doesn't
+                     blend into the navy sidebar background. -->
+                <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-white p-1 shadow-sm
                             transition-transform duration-300 ease-out will-change-transform
-                            group-hover:scale-[1.07]"
-                     style="filter:drop-shadow(0 1px 5px rgba(212,175,55,.14));"
-                     onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark-light.svg'; this.onerror=null;"
-                     loading="eager">
+                            group-hover:scale-[1.07]">
+                    <img src="<?= $adminLogoSrc ?>"
+                         alt="" aria-hidden="true"
+                         class="h-full w-full object-contain"
+                         onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark-light.svg'; this.onerror=null;"
+                         loading="eager">
+                </div>
                 <!-- Vertical separator -->
                 <div class="w-px h-7 flex-shrink-0 rounded-full" style="background:rgba(255,255,255,0.14);" aria-hidden="true"></div>
                 <!-- Text -->

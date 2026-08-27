@@ -11,15 +11,24 @@ $filters = [
     'level_id'   => $_GET['level_id'] ?? '',
     'semester_id'=> $_GET['semester_id'] ?? '',
     'type'       => $_GET['type'] ?? '',
+    'exam_month' => $_GET['exam_month'] ?? '',
+    'exam_year'  => $_GET['exam_year'] ?? '',
 ];
 
 try {
     $programs  = db()->query('SELECT id, name FROM programs ORDER BY name')->fetchAll();
     $levels    = db()->query('SELECT id, name FROM levels ORDER BY id')->fetchAll();
     $semesters = db()->query('SELECT id, name FROM semesters ORDER BY id')->fetchAll();
+    $examYears = db()->query(
+        'SELECT DISTINCT exam_year FROM past_questions WHERE exam_year IS NOT NULL ORDER BY exam_year DESC'
+    )->fetchAll(PDO::FETCH_COLUMN);
 
-    $where = 'WHERE pq.status = "active"';
-    $params = [];
+    // Only resource types currently open for browsing (see ACTIVE_RESOURCE_TYPES
+    // in includes/config.php) — existing rows of other types, if any, stay in
+    // the DB but are hidden from the public catalog for now.
+    $activeTypePlaceholders = implode(',', array_fill(0, count(ACTIVE_RESOURCE_TYPES), '?'));
+    $where = "WHERE pq.status = \"active\" AND pq.resource_type IN ($activeTypePlaceholders)";
+    $params = array_keys(ACTIVE_RESOURCE_TYPES);
 
     if ($filters['q'] !== '') {
         $where .= ' AND (c.code LIKE ? OR c.title LIKE ? OR pq.title LIKE ?)';
@@ -36,6 +45,14 @@ try {
         $where .= ' AND pq.resource_type = ?';
         $params[] = $filters['type'];
     }
+    if ($filters['exam_month'] !== '') {
+        $where .= ' AND pq.exam_month = ?';
+        $params[] = (int) $filters['exam_month'];
+    }
+    if ($filters['exam_year'] !== '') {
+        $where .= ' AND pq.exam_year = ?';
+        $params[] = (int) $filters['exam_year'];
+    }
 
     $joins = 'FROM past_questions pq
               JOIN courses c ON c.id = pq.course_id
@@ -47,7 +64,7 @@ try {
     $countStmt->execute($params);
     $pg = paginate((int) $countStmt->fetchColumn(), 12);
 
-    $sql = "SELECT pq.*, c.code, c.title, p.name AS program_name, l.name AS level_name, s.name AS semester_name
+    $sql = "SELECT pq.*, c.code, c.title AS course_title, p.name AS program_name, l.name AS level_name, s.name AS semester_name
             $joins
             $where
             ORDER BY pq.created_at DESC
@@ -80,7 +97,7 @@ require_once __DIR__ . '/includes/header.php';
             Past questions &amp; academic materials.
         </h1>
         <p class="max-w-xl text-sm leading-7" style="color:rgba(191,219,254,.72);">
-            Search and filter by program, level, semester, course, and material type.
+            Search and filter by program, level, semester, course, type, and exam month/year.
             All files are verified and ready to download instantly.
         </p>
     </div>
@@ -89,7 +106,7 @@ require_once __DIR__ . '/includes/header.php';
 <!-- ── Filter Panel ───────────────────────────────────── -->
 <section class="border-b border-slate-200 bg-white shadow-sm sticky top-[65px] z-30">
     <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <form class="grid gap-3 md:grid-cols-6 items-end" method="get">
+        <form class="grid gap-3 md:grid-cols-4 lg:grid-cols-8 items-end" method="get">
             <!-- Search -->
             <div class="md:col-span-2">
                 <label class="block text-xs font-bold text-slate-500 mb-1.5 tracking-wide uppercase">Search</label>
@@ -146,8 +163,30 @@ require_once __DIR__ . '/includes/header.php';
                 <label class="block text-xs font-bold text-slate-500 mb-1.5 tracking-wide uppercase">Type</label>
                 <select class="form-input" name="type">
                     <option value="">All types</option>
-                    <?php foreach (['past_question' => 'Past Questions', 'midsem' => 'Midsem Papers', 'end_sem' => 'End-of-Sem', 'lecture_note' => 'Lecture Notes'] as $val => $label): ?>
+                    <?php foreach (ACTIVE_RESOURCE_TYPES as $val => $label): ?>
                         <option value="<?= e($val) ?>" <?= $filters['type'] === $val ? 'selected' : '' ?>><?= e($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Exam month -->
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1.5 tracking-wide uppercase">Month</label>
+                <select class="form-input" name="exam_month">
+                    <option value="">Any month</option>
+                    <?php foreach (EXAM_MONTHS as $val => $label): ?>
+                        <option value="<?= $val ?>" <?= (string) $val === (string) $filters['exam_month'] ? 'selected' : '' ?>><?= e($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Exam year -->
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1.5 tracking-wide uppercase">Year</label>
+                <select class="form-input" name="exam_year">
+                    <option value="">Any year</option>
+                    <?php foreach ($examYears as $y): ?>
+                        <option value="<?= (int) $y ?>" <?= (string) $y === (string) $filters['exam_year'] ? 'selected' : '' ?>><?= (int) $y ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -172,7 +211,17 @@ require_once __DIR__ . '/includes/header.php';
             <?php endif; ?>
             <?php if ($filters['type']): ?>
                 <span class="rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-scotsaBlue">
-                    <?= ['past_question' => 'Past Questions', 'midsem' => 'Midsem', 'end_sem' => 'End-of-Sem', 'lecture_note' => 'Lecture Notes'][$filters['type']] ?? $filters['type'] ?>
+                    <?= e(ACTIVE_RESOURCE_TYPES[$filters['type']] ?? $filters['type']) ?>
+                </span>
+            <?php endif; ?>
+            <?php if ($filters['exam_month']): ?>
+                <span class="rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-scotsaBlue">
+                    <?= e(EXAM_MONTHS[(int) $filters['exam_month']] ?? $filters['exam_month']) ?>
+                </span>
+            <?php endif; ?>
+            <?php if ($filters['exam_year']): ?>
+                <span class="rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-scotsaBlue">
+                    <?= e((string) $filters['exam_year']) ?>
                 </span>
             <?php endif; ?>
             <a href="resources.php" class="text-xs font-bold text-red-500 hover:text-red-600 transition ml-1">
@@ -207,6 +256,10 @@ require_once __DIR__ . '/includes/header.php';
                 'lecture_note'  => ['Lecture Note',  'bg-emerald-50 text-emerald-700 border-emerald-200','book-open'],
             ];
             [$typeLabel, $typeClass, $typeIcon] = $typeMeta[$r['resource_type']] ?? [ucwords(str_replace('_', ' ', $r['resource_type'])), 'bg-slate-50 text-slate-600 border-slate-200', 'document'];
+            $fileExt = strtoupper(pathinfo($r['original_filename'], PATHINFO_EXTENSION) ?: 'FILE');
+            $periodText = $r['exam_month'] && $r['exam_year']
+                ? (EXAM_MONTHS[(int) $r['exam_month']] ?? '') . ' ' . $r['exam_year']
+                : '';
             ?>
             <article class="card-hover group flex flex-col rounded-xl border border-slate-200 bg-white p-6 fade-in fade-in-delay-<?= ($i % 3) + 1 ?>">
                 <!-- Header -->
@@ -218,11 +271,14 @@ require_once __DIR__ . '/includes/header.php';
                         <h2 class="font-heading font-black text-xl text-ink mt-2 group-hover:text-scotsaBlue transition-colors"><?= e($r['code']) ?></h2>
                     </div>
                     <span class="flex-shrink-0 rounded-lg px-2.5 py-1 text-xs font-bold"
-                          style="background:rgba(10,31,68,.07); color:#0A1F44; border:1px solid rgba(10,31,68,.12);">PDF</span>
+                          style="background:rgba(10,31,68,.07); color:#0A1F44; border:1px solid rgba(10,31,68,.12);"><?= e($fileExt) ?></span>
                 </div>
 
                 <!-- Title -->
                 <p class="font-semibold text-slate-700 text-sm leading-snug"><?= e($r['title']) ?></p>
+                <?php if ($periodText): ?>
+                <p class="mt-1 text-xs text-slate-400 font-medium"><?= e($periodText) ?></p>
+                <?php endif; ?>
 
                 <!-- Meta chips -->
                 <div class="mt-3 flex flex-wrap gap-1.5">

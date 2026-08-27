@@ -54,7 +54,7 @@ $users = db()->query("SELECT u.*, p.name program_name, l.name level_name FROM us
         <select class="form-input mt-4" name="level_id"><option value="">Level</option><?php foreach ($levels as $l): ?><option value="<?= (int) $l['id'] ?>"><?= e($l['name']) ?></option><?php endforeach; ?></select>
         <button class="btn-primary mt-5 w-full" type="submit">Add to Roster</button>
     </form>
-    <div class="rounded-lg border border-slate-200 bg-white p-6">
+    <div class="min-w-0 rounded-lg border border-slate-200 bg-white p-6">
         <h2 class="text-lg font-black">Students <span class="text-sm font-medium text-slate-400">(<?= $totalUsers ?>)</span></h2>
         <div class="mt-4 overflow-x-auto">
             <table class="w-full min-w-[760px] text-sm"><thead class="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th class="p-3">Name</th><th class="p-3">Email</th><th class="p-3">Program</th><th class="p-3">Status</th><th class="p-3">Action</th></tr></thead><tbody>
