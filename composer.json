@@ -1,0 +1,15 @@
+{
+    "name": "scotsa/platform",
+    "description": "Test tooling for the SCOTSA Platform. The app itself is plain PHP with no runtime dependencies.",
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "config": {
+        "platform": {
+            "php": "8.0.28"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

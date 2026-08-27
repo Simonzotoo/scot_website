@@ -4,22 +4,19 @@ require_once __DIR__ . '/includes/security.php';
 $pageTitle = 'Executive Team: SCOTSA Leadership';
 require_once __DIR__ . '/includes/header.php';
 
-$executives = [
-    // [role, name, portfolio, initials, bio, gradient, photo_file]
-    // photo_file: filename in assets/images/executives/, null = initials badge shown
-    ['President',                  'Justice Simon Zotoo',    'Executive Lead & Chief Representative',   'JS', 'Chairs all SCOTSA executive meetings, represents the association at Wisconsin International University College (WIUC), ITAG, and allied institutional engagements, and leads the strategic vision and direction of the association for the academic year.',          '135deg, #0A1F44 0%, #0d2a5c 100%', 'justice-simon-zotoo-president-web.jpg'],
-    ['Vice President',             'Cyril Osei Akyeampong',  'Deputy Lead & Student Affairs',           'VP', 'Supports the President in all capacities, coordinates departmental initiatives, oversees student welfare programmes, and acts in the President\'s stead when required by the association\'s constitution.', '135deg, #0d2a5c 0%, #1a3a7a 100%', 'CYRIL OSEI AKYEAMPONG VICE PRESIDENT.jpg'],
-    ['Secretary',                  'Awaiting Election',      'Administration & Official Records',       'SE', 'Manages all official SCOTSA correspondence, keeps accurate minutes of every executive meeting, maintains the association\'s records, and ensures the smooth administrative operations of SCOTSA throughout the academic year.',          '135deg, #0A1F44 0%, #07172f 100%', null],
-    ['Financial Secretary',        'Awaiting Election',      'Finance, Records & Accountability',       'FS', 'Assists the Treasurer in managing SCOTSA\'s financial records, prepares financial documentation, and ensures accurate accounting and transparent reporting of all association funds to the student body.',                         '135deg, #07172f 0%, #0A1F44 100%', null],
-    ['Organising Secretary',       'Awaiting Election',      'Events, Programmes & Logistics',         'OS', 'Plans and coordinates all SCOTSA events, academic programmes, and departmental activities, from SRC Week and orientation to end-of-semester celebrations, seminars, and inter-association engagements.',                    '135deg, #0d2a5c 0%, #0A1F44 100%', null],
-    ['Communications Director',    'John Kpakpo Boabeng',    'Communications, Media & Branding',       'JK', 'Manages SCOTSA\'s public image, social media channels, and press communications, ensuring consistent, professional representation of the association across all platforms and to the wider WIUC student community.',                  '135deg, #0A1F44 0%, #0d2a5c 100%', 'JOHN KPAKPO BOABENG - COMMUNICATIONS DIRECTOR .jpg'],
-    ['Treasurer',                  'Awaiting Election',      'Finance, Budgets & Accountability',      'TR', 'Oversees all of SCOTSA\'s financial affairs, preparing and managing the association\'s budget, maintaining financial accounts, accounting for all funds received and disbursed, and ensuring transparent financial reporting to the student body.',                    '135deg, #07172f 0%, #0d2a5c 100%', null],
-    ['Women\'s Commissioner',      'Awaiting Election',      'Gender Equity & Inclusive Programmes',   'WC', 'Leads SCOTSA\'s gender equity agenda at WIUC, drives inclusive programming, and advocates for the welfare, rights, and empowerment of women in computing and technology, ensuring every female student has an equal voice.',                      '135deg, #0d2a5c 0%, #07172f 100%', null],
-];
+$executives = [];
+try {
+    $executives = db()->query(
+        "SELECT role, name, portfolio, initials, bio, gradient, photo_path FROM team_members
+         WHERE roster = 'executive' ORDER BY sort_order, id"
+    )->fetchAll();
+} catch (Throwable $e) {
+    $executives = [];
+}
 ?>
 
 <!-- ── Page Hero ──────────────────────────────────────── -->
-<section class="page-hero text-white">
+<section class="page-hero text-white"<?= $pageHeroStyle ?>>
     <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 relative z-10">
         <nav class="mb-6 flex items-center gap-2 text-xs" style="color:rgba(191,219,254,.55);">
             <a href="<?= BASE_URL ?>/index.php" class="hover:text-white transition">Home</a>
@@ -49,7 +46,15 @@ $executives = [
     </div>
 
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <?php foreach ($executives as $i => [$role, $name, $portfolio, $initials, $bio, $gradient, $photo]): ?>
+        <?php foreach ($executives as $i => $exec):
+            $role      = $exec['role'];
+            $name      = $exec['name'] ?: 'Awaiting Election';
+            $portfolio = $exec['portfolio'];
+            $initials  = $exec['initials'];
+            $bio       = $exec['bio'];
+            $gradient  = $exec['gradient'];
+            $photo     = $exec['photo_path'];
+        ?>
         <article class="card-hover group rounded-2xl border border-slate-200 bg-white overflow-hidden fade-in fade-in-delay-<?= ($i % 4) + 1 ?>">
 
             <!-- ── Photo / Avatar section ──────────────────────────── -->
@@ -66,7 +71,7 @@ $executives = [
 
                 <?php if ($photo): ?>
 
-                    <img src="<?= IMAGES_URL ?>/executives/<?= rawurlencode($photo) ?>"
+                    <img src="<?= IMAGES_URL ?>/<?= e($photo) ?>"
                          alt="Photo of <?= e($name) ?>"
                          class="absolute inset-0 w-full h-full object-cover"
                          style="object-position:50% 15%;"
@@ -166,7 +171,7 @@ $executives = [
 </section>
 
 <!-- ── Elections CTA ──────────────────────────────────── -->
-<section class="page-hero text-white">
+<section class="page-hero text-white"<?= $pageHeroStyle ?>>
     <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 relative z-10 text-center">
         <span class="eyebrow">Get Involved</span>
         <h2 class="font-heading font-black text-3xl mt-4 mb-4 text-white max-w-xl mx-auto leading-tight">

@@ -4,53 +4,32 @@ require_once __DIR__ . '/includes/security.php';
 $pageTitle = 'Gallery: SCOTSA Events & Community';
 require_once __DIR__ . '/includes/header.php';
 
-$galleryItems = [
-    // [category, filename, caption]
-    ['events',     'IMG_4617.JPEG',   'SCOTSA Annual General Assembly'],
-    ['events',     'IMG_4620.JPEG',   'Department Welcome Ceremony'],
-    ['events',     'IMG_4637.JPEG',   'SCOTSA Community Gathering'],
-    ['events',     'IMG_4742.JPEG',   'End-of-Semester Celebration'],
-    ['events',     'IMG_4625.JPEG',   'SRC Week Opening Ceremony'],
-    ['events',     'IMG_4849.JPEG',   'SRC Week Cultural Showcase'],
-    ['seminars',   'IMG_4833.JPEG',   'Academic Awareness Seminar'],
-    ['seminars',   'IMG_4845.JPEG',   'Department Workshop'],
-    ['tech',       'IMG_4632.JPEG',   'Technology Exhibition 2024'],
-    ['events',     'IMG_4632 2.JPEG', 'SCOTSA Executive Team 2024/2025'],
+$galleryItems = [];
+try {
+    $galleryItems = db()->query(
+        "SELECT category, photo_path, caption FROM gallery_items
+         WHERE status = 'active' ORDER BY category, sort_order, id"
+    )->fetchAll();
+} catch (Throwable $e) {
+    $galleryItems = [];
+}
 
-    ['orientation', 'Orientation_71.JPEG', 'SCOTSA Orientation Group Photo'],
-    ['orientation', 'Orientation_46.JPEG', 'Connect, Create, Collaborate Campaign'],
-    ['orientation', 'Orientation_12.JPEG', 'Student Engaged During Orientation'],
-    ['orientation', 'Orientation_47.JPEG', 'Faculty Member Addressing Students'],
-    ['orientation', 'Orientation_48.JPEG', 'Open Floor Discussion at Orientation'],
-    ['orientation', 'Orientation_49.JPEG', 'Faculty Member Responding to Questions'],
-    ['orientation', 'Orientation_50.JPEG', 'Student Sharing Remarks at Orientation'],
-    ['orientation', 'Orientation_51.JPEG', 'Executive Member Addressing New Students'],
-    ['orientation', 'Orientation_52.JPEG', 'SCOTSA Executives Engaging Students'],
-    ['orientation', 'Orientation_63.JPEG', 'Student Addressing the Orientation Audience'],
-    ['orientation', 'Orientation_64.JPEG', 'SCOTSA Executive Speaking at Orientation'],
-    ['orientation', 'Orientation_65.JPEG', 'Facilitator Leading a Training Session'],
-    ['orientation', 'Orientation_66.JPEG', 'Student Attentive During the Programme'],
-    ['orientation', 'Orientation_68.JPEG', 'Connect, Create, Collaborate Campaign'],
-    ['orientation', 'IMG_7216.jpg',        'SCOTSA Team at the Orientation Session'],
-    ['orientation', 'IMG_7218.jpg',        'SCOTSA Team at the Orientation Session'],
-    ['orientation', 'IMG_7219.jpg',        'SCOTSA Team at the Orientation Session'],
-    ['orientation', 'IMG_7220.jpg',        'SCOTSA Team at the Orientation Session'],
-    ['orientation', 'IMG_7221.jpg',        'SCOTSA Team at the Orientation Session'],
-    ['orientation', 'IMG_7222.jpg',        'SCOTSA Team at the Orientation Session'],
+$categoryLabels = [
+    'events'      => 'Events',
+    'orientation' => 'Orientation',
+    'seminars'    => 'Seminars',
+    'tech'        => 'Tech Exhibitions',
 ];
-
-$categories = [
-    ['all',         'All Photos'],
-    ['events',      'Events'],
-    ['orientation', 'Orientation'],
-    ['seminars',    'Seminars'],
-    ['tech',        'Tech Exhibitions'],
-];
+$distinctCategories = array_values(array_unique(array_column($galleryItems, 'category')));
+$categories = [['all', 'All Photos']];
+foreach ($distinctCategories as $cat) {
+    $categories[] = [$cat, $categoryLabels[$cat] ?? ucwords(str_replace('-', ' ', $cat))];
+}
 $categoryMap = array_column($categories, 1, 0);
 ?>
 
 <!-- ── Page Hero ──────────────────────────────────────── -->
-<section class="page-hero text-white">
+<section class="page-hero text-white"<?= $pageHeroStyle ?>>
     <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 relative z-10">
         <nav class="mb-6 flex items-center gap-2 text-xs" style="color:rgba(191,219,254,.55);">
             <a href="<?= BASE_URL ?>/index.php" class="hover:text-white transition">Home</a>
@@ -81,8 +60,8 @@ $categoryMap = array_column($categories, 1, 0);
         <div class="flex gap-2 overflow-x-auto py-4 no-scrollbar">
             <?php foreach ($categories as $i => [$slug, $label]): ?>
                 <button class="filter-tab flex-shrink-0 <?= $i === 0 ? 'filter-active' : '' ?>"
-                        data-filter="<?= $slug ?>">
-                    <?= $label ?>
+                        data-filter="<?= e($slug) ?>">
+                    <?= e($label) ?>
                 </button>
             <?php endforeach; ?>
         </div>
@@ -92,14 +71,16 @@ $categoryMap = array_column($categories, 1, 0);
 <!-- ── Masonry Gallery ────────────────────────────────── -->
 <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
     <div class="gallery-grid">
-        <?php foreach ($galleryItems as $i => [$category, $photo, $caption]):
+        <?php foreach ($galleryItems as $i => $item):
+            $category = $item['category'];
+            $caption  = $item['caption'];
             // rawurlencode handles filenames with spaces (e.g. "IMG_4632 2.JPEG" → "IMG_4632%202.JPEG")
-            $encoded  = rawurlencode($photo);
-            $thumb    = IMAGES_URL . '/gallery/' . $encoded;
-            $fullsize = IMAGES_URL . '/gallery/' . $encoded;
+            $encoded  = implode('/', array_map('rawurlencode', explode('/', $item['photo_path'])));
+            $thumb    = IMAGES_URL . '/' . $encoded;
+            $fullsize = IMAGES_URL . '/' . $encoded;
         ?>
         <div class="gallery-item fade-in"
-             data-category="<?= $category ?>"
+             data-category="<?= e($category) ?>"
              data-lightbox="<?= htmlspecialchars($fullsize, ENT_QUOTES) ?>"
              data-caption="<?= htmlspecialchars($caption, ENT_QUOTES) ?>">
 
@@ -111,9 +92,9 @@ $categoryMap = array_column($categories, 1, 0);
             <!-- Caption overlay -->
             <div class="gallery-overlay">
                 <div>
-                    <p class="font-heading font-bold text-white text-sm leading-snug"><?= $caption ?></p>
+                    <p class="font-heading font-bold text-white text-sm leading-snug"><?= e($caption) ?></p>
                     <p class="text-xs mt-1" style="color:rgba(191,219,254,.65);">
-                        <?= $categoryMap[$category] ?? ucwords(str_replace('-', ' ', $category)) ?>
+                        <?= e($categoryMap[$category] ?? ucwords(str_replace('-', ' ', $category))) ?>
                     </p>
                 </div>
             </div>

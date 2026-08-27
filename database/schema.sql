@@ -30,7 +30,7 @@ CREATE TABLE programs (
 CREATE TABLE levels (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(40) NOT NULL UNIQUE,
-    sort_order TINYINT UNSIGNED NOT NULL
+    sort_order SMALLINT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE semesters (
@@ -119,8 +119,8 @@ INSERT INTO levels (name, sort_order) VALUES
 ('Level 400', 400);
 
 INSERT INTO semesters (name, sort_order) VALUES
-('Semester 1', 1),
-('Semester 2', 2);
+('Lower', 1),
+('Upper', 2);
 
 INSERT INTO courses (program_id, level_id, semester_id, code, title) VALUES
 (1, 1, 1, 'ITC101', 'Introduction to Information Technology'),

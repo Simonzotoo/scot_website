@@ -2,8 +2,6 @@
 $pageTitle = 'Browse Resources';
 require_once __DIR__ . '/../includes/student_header.php';
 
-$pdo = db();
-
 $filters = [
     'q'          => trim($_GET['q'] ?? ''),
     'program_id' => $_GET['program_id'] ?? '',
@@ -14,65 +12,8 @@ $filters = [
     'exam_year'  => $_GET['exam_year'] ?? '',
 ];
 
-$programs  = $pdo->query('SELECT id, name FROM programs ORDER BY name')->fetchAll();
-$levels    = $pdo->query('SELECT id, name FROM levels ORDER BY id')->fetchAll();
-$semesters = $pdo->query('SELECT id, name FROM semesters ORDER BY id')->fetchAll();
-$examYears = $pdo->query(
-    'SELECT DISTINCT exam_year FROM past_questions WHERE exam_year IS NOT NULL ORDER BY exam_year DESC'
-)->fetchAll(PDO::FETCH_COLUMN);
-
-$resources = [];
-try {
-    $activeTypePlaceholders = implode(',', array_fill(0, count(ACTIVE_RESOURCE_TYPES), '?'));
-    $where  = "WHERE pq.status = \"active\" AND pq.resource_type IN ($activeTypePlaceholders)";
-    $params = array_keys(ACTIVE_RESOURCE_TYPES);
-
-    if ($filters['q'] !== '') {
-        $where .= ' AND (c.code LIKE ? OR c.title LIKE ? OR pq.title LIKE ?)';
-        $t = '%' . $filters['q'] . '%';
-        array_push($params, $t, $t, $t);
-    }
-    foreach (['program_id' => 'c.program_id', 'level_id' => 'c.level_id', 'semester_id' => 'c.semester_id'] as $key => $col) {
-        if ($filters[$key] !== '') {
-            $where .= " AND {$col} = ?";
-            $params[] = (int) $filters[$key];
-        }
-    }
-    if ($filters['type'] !== '') {
-        $where .= ' AND pq.resource_type = ?';
-        $params[] = $filters['type'];
-    }
-    if ($filters['exam_month'] !== '') {
-        $where .= ' AND pq.exam_month = ?';
-        $params[] = (int) $filters['exam_month'];
-    }
-    if ($filters['exam_year'] !== '') {
-        $where .= ' AND pq.exam_year = ?';
-        $params[] = (int) $filters['exam_year'];
-    }
-
-    $joins = 'FROM past_questions pq
-              JOIN courses c ON c.id = pq.course_id
-              JOIN programs p ON p.id = c.program_id
-              JOIN levels l ON l.id = c.level_id
-              JOIN semesters s ON s.id = c.semester_id';
-
-    $countStmt = $pdo->prepare("SELECT COUNT(*) $joins $where");
-    $countStmt->execute($params);
-    $pg = paginate((int) $countStmt->fetchColumn(), 12);
-
-    $sql = "SELECT pq.*, c.code, c.title AS course_title, p.name AS program_name, l.name AS level_name, s.name AS semester_name
-            $joins
-            $where
-            ORDER BY pq.created_at DESC
-            LIMIT {$pg['perPage']} OFFSET {$pg['offset']}";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $resources = $stmt->fetchAll();
-} catch (Throwable $e) {
-    $resources = [];
-    $pg = paginate(0, 12);
-}
+['programs' => $programs, 'levels' => $levels, 'semesters' => $semesters, 'examYears' => $examYears] = fetch_resource_filter_options();
+['resources' => $resources, 'pagination' => $pg] = search_resources($filters, 12);
 
 $pageQuery = $_GET;
 unset($pageQuery['page']);

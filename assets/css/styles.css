@@ -346,11 +346,14 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
    HERO — HOMEPAGE
 ════════════════════════════════════════════════════════════ */
 .hero-grid {
+    /* Overridable per-page via an inline style="--hero-image:url(...)"
+       (see index.php, which reads the active photo from site_settings). */
+    --hero-image: url("../images/hero/hero-orientation-team.jpg");
     background:
         linear-gradient(140deg, rgba(10,31,68,.62) 0%, rgba(7,23,47,.56) 50%, rgba(13,42,92,.50) 100%),
         radial-gradient(ellipse at 78% 10%, rgba(212,175,55,.28) 0%, transparent 52%),
         radial-gradient(ellipse at 20% 80%, rgba(10,31,68,.45) 0%, transparent 50%),
-        url("../images/hero/hero-orientation-team.jpg");
+        var(--hero-image);
     background-position: center;
     background-size: cover;
     position: relative;
@@ -385,9 +388,27 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
    PAGE HERO — inner pages
 ════════════════════════════════════════════════════════════ */
 .page-hero {
-    background: linear-gradient(140deg, var(--royal) 0%, var(--royal-deep) 100%);
+    /* Overridable via inline style="--page-hero-image:url(...)" (see
+       includes/header.php, which reads the active photo from site_settings).
+       background-color is the fallback so the navy look stays solid/opaque
+       on any page where no photo has been set yet. */
+    --page-hero-image: none;
+    background-color: #0A1F44;
+    background-image:
+        linear-gradient(140deg, rgba(10,31,68,.80) 0%, rgba(7,23,47,.76) 50%, rgba(13,42,92,.72) 100%),
+        var(--page-hero-image);
+    /* Biased toward the top: these banners are much wider than they are
+       tall, so a dead-center crop tends to land on torsos/waists instead of
+       faces in portrait-oriented or standing-subject photos. */
+    background-position: center 25%;
+    background-size: cover;
     position: relative;
     overflow: hidden;
+}
+.page-hero h1,
+.page-hero p,
+.page-hero .eyebrow {
+    text-shadow: 0 2px 10px rgba(0,0,0,.45);
 }
 .page-hero::before {
     content: '';

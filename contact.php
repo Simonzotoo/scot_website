@@ -3,10 +3,23 @@ require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/includes/security.php';
 $pageTitle = 'Contact SCOTSA: Get In Touch';
 require_once __DIR__ . '/includes/header.php';
+
+$siteSettings = [];
+try {
+    $siteSettings = db()->query('SELECT setting_key, setting_value FROM site_settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+} catch (Throwable $e) {
+    $siteSettings = [];
+}
+$contactEmail    = $siteSettings['contact_email']    ?? 'scotsawiuc@gmail.com';
+$whatsappUrl     = $siteSettings['whatsapp_url']      ?? 'https://chat.whatsapp.com/Cn2b43LoXOH1WGCg0uBaNR?s=cl&p=i&mlu=4';
+$facebookUrl     = $siteSettings['social_facebook']   ?? '#';
+$instagramUrl    = $siteSettings['social_instagram']  ?? '#';
+$tiktokUrl       = $siteSettings['social_tiktok']      ?? '#';
+$twitterUrl      = $siteSettings['social_twitter']    ?? '#';
 ?>
 
 <!-- ── Page Hero ──────────────────────────────────────── -->
-<section class="page-hero text-white">
+<section class="page-hero text-white"<?= $pageHeroStyle ?>>
     <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 relative z-10">
         <nav class="mb-6 flex items-center gap-2 text-xs text-blue-200/60">
             <a href="<?= BASE_URL ?>/index.php" class="hover:text-white transition">Home</a>
@@ -39,7 +52,7 @@ require_once __DIR__ . '/includes/header.php';
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
         <!-- WhatsApp -->
-        <a href="https://chat.whatsapp.com/Cn2b43LoXOH1WGCg0uBaNR?s=cl&p=i&mlu=4" target="_blank" rel="noopener"
+        <a href="<?= e($whatsappUrl) ?>" target="_blank" rel="noopener"
            class="contact-card group fade-in">
             <div class="social-icon flex-shrink-0" style="background:rgba(37,211,102,.12); color:#1DA851;">
                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
@@ -57,7 +70,7 @@ require_once __DIR__ . '/includes/header.php';
         </a>
 
         <!-- Email -->
-        <a href="mailto:scotsawiuc@gmail.com"
+        <a href="mailto:<?= e($contactEmail) ?>"
            class="contact-card group fade-in fade-in-delay-1">
             <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
@@ -67,7 +80,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="min-w-0">
                 <p class="font-heading font-bold text-ink text-sm">Email</p>
                 <p class="text-slate-500 text-xs mt-0.5">Send us a message anytime</p>
-                <p class="text-xs font-semibold mt-1 text-scotsaBlue">scotsawiuc@gmail.com</p>
+                <p class="text-xs font-semibold mt-1 text-scotsaBlue"><?= e($contactEmail) ?></p>
             </div>
             <svg class="h-4 w-4 text-slate-300 flex-shrink-0 ml-auto transition group-hover:text-slate-500 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -75,7 +88,7 @@ require_once __DIR__ . '/includes/header.php';
         </a>
 
         <!-- Facebook -->
-        <a href="https://www.facebook.com/share/1Hrd1Z7gii/?mibextid=wwXIfr" target="_blank" rel="noopener"
+        <a href="<?= e($facebookUrl) ?>" target="_blank" rel="noopener"
            class="contact-card group fade-in fade-in-delay-1">
             <div class="social-icon flex-shrink-0" style="background:rgba(24,119,242,.10); color:#1877F2;">
                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
@@ -93,7 +106,7 @@ require_once __DIR__ . '/includes/header.php';
         </a>
 
         <!-- Instagram -->
-        <a href="https://www.instagram.com/scotsa_wiuc?igsi=MWxqZ2RtdXQwaGt1Yw==" target="_blank" rel="noopener"
+        <a href="<?= e($instagramUrl) ?>" target="_blank" rel="noopener"
            class="contact-card group fade-in fade-in-delay-2">
             <div class="social-icon flex-shrink-0" style="background:linear-gradient(135deg, rgba(240,148,51,.14) 0%, rgba(230,104,60,.14) 25%, rgba(220,39,67,.14) 50%, rgba(204,35,102,.14) 75%, rgba(188,24,136,.14) 100%); color:#dc2743;">
                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
@@ -111,7 +124,7 @@ require_once __DIR__ . '/includes/header.php';
         </a>
 
         <!-- TikTok -->
-        <a href="https://www.tiktok.com/@scotsa_wiuc?_r=1&_t=ZS-99Dd4S31JyO" target="_blank" rel="noopener"
+        <a href="<?= e($tiktokUrl) ?>" target="_blank" rel="noopener"
            class="contact-card group fade-in fade-in-delay-2">
             <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.07); color:#0A1F44;">
                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
@@ -129,7 +142,7 @@ require_once __DIR__ . '/includes/header.php';
         </a>
 
         <!-- X (Twitter) -->
-        <a href="https://x.com/scotsawiuc?s=21" target="_blank" rel="noopener"
+        <a href="<?= e($twitterUrl) ?>" target="_blank" rel="noopener"
            class="contact-card group fade-in fade-in-delay-3">
             <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.07); color:#0A1F44;">
                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">

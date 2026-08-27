@@ -1,4 +1,15 @@
-<?php require_once __DIR__ . '/config.php'; ?>
+<?php
+require_once __DIR__ . '/config.php';
+
+$siteSettings = [];
+try {
+    $siteSettings = db()->query('SELECT setting_key, setting_value FROM site_settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+} catch (Throwable $e) {
+    $siteSettings = [];
+}
+$contactEmail = $siteSettings['contact_email'] ?? 'scotsawiuc@gmail.com';
+$whatsappUrl  = $siteSettings['whatsapp_url']  ?? 'https://chat.whatsapp.com/Cn2b43LoXOH1WGCg0uBaNR?s=cl&p=i&mlu=4';
+?>
 </main>
 
 <!-- ── Footer ──────────────────────────────────────────────── -->
@@ -54,10 +65,10 @@
                 <div class="mt-6 flex gap-2.5">
                     <?php
                     $socials = [
-                        ['Facebook',  'https://www.facebook.com/share/1Hrd1Z7gii/?mibextid=wwXIfr',              'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z'],
-                        ['Instagram', 'https://www.instagram.com/scotsa_wiuc?igsi=MWxqZ2RtdXQwaGt1Yw==',         'M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
-                        ['X',         'https://x.com/scotsawiuc?s=21',                                           'M4 4l16 16M20 4L4 20'],
-                        ['TikTok',    'https://www.tiktok.com/@scotsa_wiuc?_r=1&_t=ZS-99Dd4S31JyO',              'M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z'],
+                        ['Facebook',  $siteSettings['social_facebook']  ?? '#', 'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z'],
+                        ['Instagram', $siteSettings['social_instagram'] ?? '#', 'M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+                        ['X',         $siteSettings['social_twitter']   ?? '#', 'M4 4l16 16M20 4L4 20'],
+                        ['TikTok',    $siteSettings['social_tiktok']    ?? '#', 'M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z'],
                     ];
                     foreach ($socials as [$name, $url, $path]):
                     ?>
@@ -102,8 +113,8 @@
                 <div class="grid gap-3 text-sm" style="color:rgba(191,219,254,.65);">
                     <p class="leading-6">School of Computing<br>and Technology Students Assoc.</p>
                     <p>
-                        <a href="mailto:scotsawiuc@gmail.com" class="hover:text-white transition-colors duration-150 underline underline-offset-2 decoration-transparent hover:decoration-current">
-                            scotsawiuc@gmail.com
+                        <a href="mailto:<?= e($contactEmail) ?>" class="hover:text-white transition-colors duration-150 underline underline-offset-2 decoration-transparent hover:decoration-current">
+                            <?= e($contactEmail) ?>
                         </a>
                     </p>
                     <p class="flex items-start gap-1.5">
@@ -132,11 +143,13 @@
         &copy; <?= date('Y') ?> SCOTSA. All rights reserved.
         <span class="mx-2 opacity-40">&middot;</span>
         Built for students, by students.
+        <span class="mx-2 opacity-40">&middot;</span>
+        <a href="<?= BASE_URL ?>/admin/login.php" class="hover:text-white transition-colors duration-150">Admin</a>
     </div>
 </footer>
 
 <!-- ── Floating WhatsApp button ─────────────────────────────── -->
-<a href="https://chat.whatsapp.com/Cn2b43LoXOH1WGCg0uBaNR?s=cl&p=i&mlu=4" target="_blank" rel="noopener"
+<a href="<?= e($whatsappUrl) ?>" target="_blank" rel="noopener"
    class="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 grid h-14 w-14 place-items-center rounded-full shadow-lg transition-transform duration-200 hover:scale-110 active:scale-95"
    style="background:#25D366; box-shadow:0 8px 24px rgba(0,0,0,.25);"
    aria-label="Join our WhatsApp community" title="Join our WhatsApp community">

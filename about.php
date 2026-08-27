@@ -6,7 +6,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ── Page Hero ──────────────────────────────────────── -->
-<section class="page-hero text-white">
+<section class="page-hero text-white"<?= $pageHeroStyle ?>>
     <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 relative z-10">
         <nav class="mb-6 flex items-center gap-2 text-xs" style="color:rgba(191,219,254,.55);">
             <a href="<?= BASE_URL ?>/index.php" class="hover:text-white transition">Home</a>
@@ -124,10 +124,9 @@ require_once __DIR__ . '/includes/header.php';
                 <h3 class="font-heading font-black text-xl text-ink">Our Vision</h3>
             </div>
             <p class="text-slate-500 leading-8 text-sm">
-                To build a thriving community of computing and technology students at WIUC who
-                are equipped, empowered, and inspired to drive technological innovation, where
-                every student's academic journey is supported, every voice is heard, and
-                tomorrow's leaders are shaped today.
+                A community of computing and technology students at WIUC who are equipped and
+                supported to pursue innovation in their fields, with every student's academic
+                journey supported and every voice heard.
             </p>
         </div>
     </div>
@@ -148,7 +147,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <?php foreach ([
                 ['academic-cap', 'Academic Excellence',  'We champion rigorous learning, peer support, and the highest academic standards across all computing and technology programs at WIUC.'],
-                ['heart',        'Student Well-being',   'Every member\'s welfare is our priority. We advocate for student rights, fair treatment, and an environment where all students can thrive.'],
+                ['heart',        'Student Well-being',   'Every member\'s welfare is our priority. We advocate for student rights and fair treatment for all our members.'],
                 ['light-bulb',   'Innovation',            'We embrace technological thinking, creative problem-solving, and forward-looking solutions that prepare WIUC students to shape tomorrow\'s world.'],
                 ['eye',          'Transparency',          'We operate with openness and accountability, from executive decisions to resource management, event planning, and financial reporting.'],
                 ['users',        'Cooperation',           'We actively promote cooperation with ITAG and allied student associations, building bridges across departments and institutions.'],
@@ -168,7 +167,7 @@ require_once __DIR__ . '/includes/header.php';
 </section>
 
 <!-- ── Stats Row ──────────────────────────────────────── -->
-<section class="page-hero text-white relative overflow-hidden">
+<section class="page-hero text-white relative overflow-hidden"<?= $pageHeroStyle ?>>
     <div class="absolute inset-0 pointer-events-none"
          style="background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px); background-size:24px 24px;"></div>
     <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 relative z-10">
@@ -193,13 +192,13 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- ── CTA ────────────────────────────────────────────── -->
 <section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 text-center fade-in">
-    <span class="eyebrow">Ready to explore?</span>
+    <span class="eyebrow">Get Involved</span>
     <div class="gold-line mt-3 mx-auto mb-5"></div>
     <h2 class="font-heading font-black text-3xl text-ink mt-4 mb-5 max-w-xl mx-auto leading-tight">
-        Dive into everything SCOTSA has to offer.
+        See what SCOTSA runs day to day.
     </h2>
     <p class="text-slate-500 text-sm max-w-md mx-auto leading-7 mb-8">
-        Resources, announcements, executives, gallery: it's all here, built for you.
+        Past questions and notes, executive contacts, event photos, and official announcements.
     </p>
     <div class="flex flex-wrap gap-3 justify-center">
         <a class="btn-primary" href="<?= BASE_URL ?>/resources.php">Browse Resources</a>

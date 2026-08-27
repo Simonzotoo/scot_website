@@ -5,6 +5,21 @@ require_once __DIR__ . '/student_auth.php';
 $pageTitle   = $pageTitle ?? APP_NAME;
 $currentPage = basename($_SERVER['PHP_SELF']);
 $navStudent  = current_student();
+
+$pageHeroStyle = '';
+try {
+    $heroPool = db()->query('SELECT photo_path FROM page_hero_photos ORDER BY sort_order, id')->fetchAll(PDO::FETCH_COLUMN);
+    if ($heroPool) {
+        // Deterministic per-page assignment (not random) so each page keeps
+        // the same photo across reloads, but pages differ from each other.
+        $heroPageOrder = ['index.php' => 0, 'executives.php' => 1, 'resources.php' => 2, 'gallery.php' => 3, 'contact.php' => 4, 'about.php' => 5, 'announcements.php' => 6];
+        $slot = $heroPageOrder[$currentPage] ?? 0;
+        $pageHeroImage = $heroPool[$slot % count($heroPool)];
+        $pageHeroStyle = ' style="--page-hero-image:url(\'' . e(IMAGES_URL . '/' . $pageHeroImage) . '\')"';
+    }
+} catch (Throwable $e) {
+    $pageHeroStyle = '';
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -154,11 +169,10 @@ $navStudent  = current_student();
             </button>
 
             <?php if ($navStudent): ?>
-            <a class="ml-2 btn-primary" href="<?= BASE_URL ?>/student/dashboard.php">Dashboard</a>
+            <a class="ml-2 btn-primary" href="<?= BASE_URL ?>/student/dashboard.php">Portal</a>
             <?php else: ?>
             <a class="ml-2 btn-primary" href="<?= BASE_URL ?>/student/login.php">Student Login</a>
             <?php endif; ?>
-            <a class="ml-1 px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 hover:text-scotsaBlue dark:hover:text-scotsaGold transition" href="<?= BASE_URL ?>/admin/login.php">Admin</a>
         </div>
     </nav>
 
@@ -172,11 +186,10 @@ $navStudent  = current_student();
                    href="<?= $href ?>"><?= $label ?></a>
             <?php endforeach; ?>
             <?php if ($navStudent): ?>
-            <a class="mt-2 btn-primary text-center" href="<?= BASE_URL ?>/student/dashboard.php">Dashboard</a>
+            <a class="mt-2 btn-primary text-center" href="<?= BASE_URL ?>/student/dashboard.php">Portal</a>
             <?php else: ?>
             <a class="mt-2 btn-primary text-center" href="<?= BASE_URL ?>/student/login.php">Student Login</a>
             <?php endif; ?>
-            <a class="mt-1 text-center text-xs font-semibold text-slate-400 dark:text-slate-500 py-2" href="<?= BASE_URL ?>/admin/login.php">Admin Login</a>
         </div>
     </div>
 </header>

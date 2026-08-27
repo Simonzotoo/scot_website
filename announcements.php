@@ -16,7 +16,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ── Page Hero ──────────────────────────────────────── -->
-<section class="page-hero text-white">
+<section class="page-hero text-white"<?= $pageHeroStyle ?>>
     <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 relative z-10">
         <nav class="mb-6 flex items-center gap-2 text-xs" style="color:rgba(191,219,254,.55);">
             <a href="<?= BASE_URL ?>/index.php" class="hover:text-white transition">Home</a>
