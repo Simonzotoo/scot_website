@@ -70,7 +70,7 @@ $courses = db()->query("SELECT c.*, p.name program_name, l.name level_name, s.na
         <textarea class="form-input mt-4" name="description" placeholder="Description"><?= e($edit['description'] ?? '') ?></textarea>
         <button class="btn-primary mt-5 w-full" type="submit">Save Course</button>
     </form>
-    <div class="rounded-lg border border-slate-200 bg-white p-6">
+    <div class="min-w-0 rounded-lg border border-slate-200 bg-white p-6">
         <h2 class="text-lg font-black">All Courses <span class="text-sm font-medium text-slate-400">(<?= $totalCourses ?>)</span></h2>
         <div class="mt-4 overflow-x-auto">
             <table class="w-full min-w-[780px] text-sm"><thead class="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th class="p-3">Code</th><th class="p-3">Title</th><th class="p-3">Program</th><th class="p-3">Level</th><th class="p-3">Actions</th></tr></thead><tbody>

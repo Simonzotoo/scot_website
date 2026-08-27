@@ -113,7 +113,7 @@ $admins = db()->query('SELECT id, name, email, role, created_at FROM admins ORDE
         </form>
     </div>
 
-    <div class="rounded-lg border border-slate-200 bg-white p-6">
+    <div class="min-w-0 rounded-lg border border-slate-200 bg-white p-6">
         <h2 class="text-lg font-black">All Admins <span class="text-sm font-medium text-slate-400">(<?= count($admins) ?>)</span></h2>
         <div class="mt-4 overflow-x-auto">
             <table class="w-full min-w-[680px] text-sm">

@@ -50,14 +50,22 @@ $__flash = consume_flash();
                                            focus-visible:outline-none focus-visible:ring-2
                                            focus-visible:ring-scotsaGold focus-visible:ring-offset-1
                                            focus-visible:ring-offset-scotsaBlue rounded-lg">
-                <img src="<?= IMAGES_URL ?>/logo/logo-dark.png"
-                     alt="" aria-hidden="true"
-                     class="h-10 w-10 flex-shrink-0 object-contain
+                <!-- White backdrop chip so the mark's navy ring doesn't
+                     blend into the navy sidebar background. -->
+                <?php
+                $studentLogoSrc = is_file(IMAGES_ROOT . '/logo/logo-light.png')
+                    ? IMAGES_URL . '/logo/logo-light.png'
+                    : IMAGES_URL . '/logo/logo-dark.png';
+                ?>
+                <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-white p-1 shadow-sm
                             transition-transform duration-300 ease-out will-change-transform
-                            group-hover:scale-[1.07]"
-                     style="filter:drop-shadow(0 1px 5px rgba(212,175,55,.14));"
-                     onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark-light.svg'; this.onerror=null;"
-                     loading="eager">
+                            group-hover:scale-[1.07]">
+                    <img src="<?= $studentLogoSrc ?>"
+                         alt="" aria-hidden="true"
+                         class="h-full w-full object-contain"
+                         onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark-light.svg'; this.onerror=null;"
+                         loading="eager">
+                </div>
                 <div class="w-px h-7 flex-shrink-0 rounded-full" style="background:rgba(255,255,255,0.14);" aria-hidden="true"></div>
                 <div class="leading-none min-w-0">
                     <span class="block font-heading font-black text-white leading-none
@@ -89,7 +97,7 @@ $__flash = consume_flash();
         <?php
         $studentLinks = [
             ['Dashboard',         'dashboard.php',                 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
-            ['Browse Resources',  BASE_URL . '/resources.php',     'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z'],
+            ['Browse Resources',  'resources.php',                 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z'],
             ['Announcements',     BASE_URL . '/announcements.php', 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z'],
         ];
         ?>

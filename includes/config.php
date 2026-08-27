@@ -58,6 +58,46 @@ define('BASE_URL', env('APP_BASE_URL') ?? detect_base_url());
 define('UPLOAD_ROOT', dirname(__DIR__) . '/uploads');
 define('MAX_UPLOAD_BYTES', 10 * 1024 * 1024);
 
+/**
+ * Resource types open for new uploads/browsing right now. The DB column is
+ * an ENUM covering all four (see database/schema.sql) so no migration is
+ * needed to bring midsem/end_sem back later — just add them back here.
+ */
+define('ACTIVE_RESOURCE_TYPES', [
+    'past_question' => 'Past Question',
+    'lecture_note'  => 'Lecture Note',
+]);
+
+// Every type the schema supports, used where existing/legacy data of a
+// currently-inactive type still needs a sensible label (e.g. admin lists).
+define('ALL_RESOURCE_TYPES', [
+    'past_question' => 'Past Question',
+    'midsem'        => 'Midsem Paper',
+    'end_sem'       => 'End-of-Sem',
+    'lecture_note'  => 'Lecture Note',
+]);
+
+/**
+ * File types accepted for resource uploads, keyed by the MIME type detected
+ * server-side (via finfo, not the client-supplied filename) so the stored
+ * extension and Content-Type can never be spoofed by a renamed file.
+ */
+define('ALLOWED_RESOURCE_MIME_TYPES', [
+    'application/pdf'                                                          => 'pdf',
+    'application/msword'                                                       => 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'  => 'docx',
+    'application/vnd.ms-powerpoint'                                            => 'ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation'=> 'pptx',
+    'image/jpeg'                                                               => 'jpg',
+    'image/png'                                                                => 'png',
+]);
+
+define('EXAM_MONTHS', [
+    1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+    5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+    9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+]);
+
 define('STUDENT_EMAIL_DOMAIN', env('STUDENT_EMAIL_DOMAIN', 'wiuc-ghana.edu.gh'));
 
 define('DB_HOST', env('DB_HOST', '127.0.0.1'));

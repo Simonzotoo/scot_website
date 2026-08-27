@@ -22,7 +22,7 @@ require_once __DIR__ . '/includes/header.php';
     <!-- Animated gold orb -->
     <div class="hero-orb"></div>
 
-    <div class="mx-auto max-w-3xl min-h-[78vh] flex flex-col justify-center gap-12 px-4 py-24 sm:px-6 lg:px-8 relative z-10">
+    <div class="mx-auto max-w-3xl min-h-[58vh] flex flex-col justify-center gap-12 px-4 py-20 sm:px-6 lg:px-8 relative z-10">
 
         <!-- Copy -->
         <div>
@@ -36,8 +36,8 @@ require_once __DIR__ . '/includes/header.php';
             </h1>
 
             <p class="mt-6 max-w-xl text-base leading-8" style="color:rgba(191,219,254,.78);">
-                Access past questions, course materials, announcements, and events from SCOTSA,
-                the official student association of Wisconsin International University College (WIUC), Accra.
+                SCOTSA's official platform for academic resources, announcements, and events
+                at Wisconsin International University College (WIUC), Accra.
             </p>
 
             <div class="mt-9 flex flex-wrap gap-3">
@@ -49,34 +49,57 @@ require_once __DIR__ . '/includes/header.php';
                 </a>
                 <a class="btn-outline-white" href="<?= BASE_URL ?>/about.php">About SCOTSA</a>
             </div>
-
-            <!-- Trust badges -->
-            <div class="mt-10 flex flex-wrap gap-5">
-                <?php foreach ([
-                    ['Verified PDFs',  'Academic files reviewed by SCOTSA'],
-                    ['24/7 Access',    'Always available, anywhere'],
-                    ['6 Programs',     'BSc &amp; Diploma, all supported'],
-                ] as [$badge, $sub]): ?>
-                <div class="flex items-center gap-2.5">
-                    <div class="grid h-5 w-5 place-items-center rounded-full flex-shrink-0"
-                         style="background:rgba(212,175,55,.20); border:1px solid rgba(212,175,55,.40);">
-                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" style="color:#D4AF37;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-heading font-bold text-white"><?= $badge ?></span>
-                        <span class="block text-[10px]" style="color:rgba(191,219,254,.55);"><?= $sub ?></span>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
         </div>
     </div>
 
-    <!-- Bottom fade blend -->
-    <div class="hero-fade-bottom absolute bottom-0 left-0 right-0 h-36 pointer-events-none"></div>
 </section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCHOOL LEADERSHIP
+     Edit the array below with real names/titles once appointed —
+     "Awaiting Appointment" follows the same placeholder convention
+     already used for vacant roles on executives.php.
+════════════════════════════════════════════════════════════ -->
+<section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+    <div class="text-center mb-12 fade-in">
+        <span class="eyebrow">School Leadership</span>
+        <div class="gold-line mt-3 mx-auto mb-4"></div>
+        <h2 class="font-heading font-black text-3xl text-ink">Guided by academic leadership.</h2>
+        <p class="text-slate-500 text-sm max-w-md mx-auto mt-3 leading-7">
+            The Dean and Heads of Department overseeing the School of Computing and Technology.
+        </p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <?php foreach ([
+            ['Dean, School of Computing and Technology', 'Dr. Patrick Kudjo', 'DR.PATRICK KUDJO DEAN.PNG'],
+            ['Head of Department, Business Computing', 'Mr. Charles A. Babbage Jnr', 'MR.CHARLES BABBAGE JNR ASIEDU  HOD BUSINESS COMPUTING .jpg'],
+            ['Head of Department, Information Technology', 'Dr. Amankwa', null],
+            ['Head of Department, Mathematics Application', 'Dr. Leonard Kyei', null],
+            ['Patron', 'Mr. Edwin Agbah', 'mr edwin agbah patron.jpg'],
+        ] as $i => [$title, $name, $photo]): ?>
+        <div class="card-hover group rounded-2xl border border-slate-200 bg-white overflow-hidden fade-in fade-in-delay-<?= ($i % 3) + 1 ?>">
+            <div class="relative overflow-hidden bg-slate-100" style="padding-top:115%;">
+                <?php if ($photo): ?>
+                <img src="<?= IMAGES_URL ?>/executives/<?= rawurlencode($photo) ?>" alt="<?= e($name) ?>"
+                     class="absolute inset-0 h-full w-full object-cover"
+                     style="object-position:50% 15%;"
+                     loading="lazy"
+                     onerror="this.src='<?= IMAGES_URL ?>/placeholders/avatar.svg'; this.onerror=null;">
+                <?php else: ?>
+                <img src="<?= avatar_url(null, $name) ?>" alt="" class="absolute inset-0 h-full w-full object-cover">
+                <?php endif; ?>
+            </div>
+            <div class="p-5 text-center">
+                <p class="font-heading font-bold text-ink text-sm"><?= e($name) ?></p>
+                <p class="mt-1 text-xs text-slate-400 leading-5"><?= e($title) ?></p>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
 
 <!-- ═══════════════════════════════════════════════════════════
      WHY SCOTSA
@@ -189,12 +212,10 @@ require_once __DIR__ . '/includes/header.php';
         </p>
     </div>
 
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-5 max-w-2xl mx-auto sm:grid-cols-2">
         <?php foreach ([
-            ['document',       'Past Questions',    'Examinations from previous academic years, organized by course and level.',      BASE_URL . '/resources.php?type=past_question',  '#0A1F44', 'rgba(10,31,68,.06)'],
-            ['pencil-square',  'Midsem Papers',     'Mid-semester papers and quizzes across all programs and levels.',                 BASE_URL . '/resources.php?type=midsem',          '#b8961e', 'rgba(212,175,55,.10)'],
-            ['book-open',      'Lecture Notes',     'Curated notes shared by peers and course coordinators.',                          BASE_URL . '/resources.php?type=lecture_note',    '#0A1F44', 'rgba(10,31,68,.06)'],
-            ['clipboard-list', 'End-of-Sem Papers', 'Upper semester examination archives for all programs and courses at WIUC.',       BASE_URL . '/resources.php?type=end_sem',         '#b8961e', 'rgba(212,175,55,.10)'],
+            ['document',   'Past Questions', 'Examinations from previous academic years, organized by course and level.', BASE_URL . '/resources.php?type=past_question', '#0A1F44', 'rgba(10,31,68,.06)'],
+            ['book-open',  'Lecture Notes',  'Curated notes shared by peers and course coordinators.',                    BASE_URL . '/resources.php?type=lecture_note',  '#b8961e', 'rgba(212,175,55,.10)'],
         ] as $i => [$iconName, $title, $desc, $href, $accent, $iconBg]): ?>
         <a href="<?= $href ?>"
            class="card-hover group rounded-xl border border-slate-200 bg-white p-6 text-left fade-in fade-in-delay-<?= $i + 1 ?>">

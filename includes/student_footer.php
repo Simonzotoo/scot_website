@@ -16,39 +16,34 @@
             htmlContainer: 'swal-scotsa-body',
             confirmButton: 'swal-scotsa-btn swal-scotsa-btn--primary',
             cancelButton:  'swal-scotsa-btn swal-scotsa-btn--secondary',
+            timerProgressBar: 'swal-scotsa-progress',
         },
         buttonsStyling: false,
         showClass: { popup: 'swal2-show swal-scotsa-in' },
         hideClass: { popup: 'swal2-hide swal-scotsa-out' },
     });
 
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4500,
-        timerProgressBar: true,
-        customClass: { popup: 'swal-scotsa-toast', timerProgressBar: 'swal-scotsa-progress' },
-        showClass: { popup: 'swal-scotsa-toast-in' },
-        hideClass: { popup: 'swal-scotsa-toast-out' },
-        didOpen(toast) {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-        },
-    });
-
+    /* Centered modal (not a corner toast) so it's impossible to miss
+       after an action like an upload/save — auto-dismisses on its own
+       timer, but a click also closes it immediately. */
     const flashEl = document.getElementById('scotsa-flash');
     if (flashEl) {
         try {
             const flashes = JSON.parse(flashEl.textContent || '[]');
-            flashes.forEach((msg, i) => {
-                setTimeout(() => {
-                    Toast.fire({
-                        icon: msg.type === 'success' ? 'success' : msg.type === 'warning' ? 'warning' : 'error',
-                        title: msg.message,
+            (async () => {
+                for (const msg of flashes) {
+                    await swal.fire({
+                        icon:  msg.type === 'success' ? 'success'
+                             : msg.type === 'warning'  ? 'warning'
+                             : 'error',
+                        title: msg.type === 'success' ? 'Success' : msg.type === 'warning' ? 'Heads up' : 'Something went wrong',
+                        text:  msg.message,
+                        showConfirmButton: false,
+                        timer: 2800,
+                        timerProgressBar: true,
                     });
-                }, i * 600);
-            });
+                }
+            })();
         } catch (_) { /* guard against malformed JSON */ }
     }
 

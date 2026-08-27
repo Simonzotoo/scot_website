@@ -67,15 +67,18 @@ $navStudent  = current_student();
                      style="filter:drop-shadow(0 1px 4px rgba(10,31,68,.14));"
                      onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark.svg'; this.onerror=null;"
                      loading="eager">
-                <!-- Dark-bg mark (shown in dark mode), resolved server-side, no 404 -->
-                <img src="<?= $logoLight ?>"
-                     alt="" aria-hidden="true"
-                     class="hidden dark:block h-11 w-11 sm:h-12 sm:w-12 object-contain
-                            transition-transform duration-300 ease-out will-change-transform
-                            group-hover:scale-[1.08]"
-                     style="filter:drop-shadow(0 1px 6px rgba(212,175,55,.18));"
-                     onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark-light.svg'; this.onerror=null;"
-                     loading="eager">
+                <!-- Dark-bg mark (shown in dark mode), resolved server-side, no 404.
+                     White backdrop chip so the mark's navy ring doesn't blend
+                     into the dark page background behind it. -->
+                <div class="hidden dark:grid h-11 w-11 sm:h-12 sm:w-12 place-items-center rounded-full bg-white p-1 shadow-sm">
+                    <img src="<?= $logoLight ?>"
+                         alt="" aria-hidden="true"
+                         class="h-full w-full object-contain
+                                transition-transform duration-300 ease-out will-change-transform
+                                group-hover:scale-[1.08]"
+                         onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark-light.svg'; this.onerror=null;"
+                         loading="eager">
+                </div>
             </div>
 
             <!-- Vertical separator, desktop only -->

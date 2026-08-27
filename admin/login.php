@@ -71,8 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="p-8 sm:p-10">
                 <!-- Logo -->
                 <div class="flex items-center gap-3 mb-7">
-                    <div class="grid h-11 w-11 place-items-center rounded-xl font-heading font-black text-sm text-white shadow-md"
-                         style="background:#0A1F44;">SC</div>
+                    <img src="<?= IMAGES_URL ?>/logo/logo-dark.png" alt="SCOTSA logo"
+                         class="h-11 w-11 object-contain flex-shrink-0"
+                         onerror="this.src='<?= IMAGES_URL ?>/placeholders/logo-mark.svg'; this.onerror=null;">
                     <div>
                         <span class="block font-heading font-black text-scotsaBlue text-lg leading-none">SCOTSA</span>
                         <span class="block text-[10px] font-semibold text-slate-400 mt-0.5">Admin Dashboard</span>

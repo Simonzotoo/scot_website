@@ -21,7 +21,7 @@ $myDownloadTotal = (int) $countStmt->fetchColumn();
 $recommended = [];
 if ($student['program_id'] && $student['level_id']) {
     $stmt = $pdo->prepare(
-        "SELECT pq.id, pq.title, pq.resource_type, pq.academic_year, pq.file_size, pq.created_at, c.code
+        "SELECT pq.id, pq.title, pq.resource_type, pq.exam_month, pq.exam_year, pq.file_size, pq.created_at, c.code
          FROM past_questions pq JOIN courses c ON c.id = pq.course_id
          WHERE pq.status = 'active' AND c.program_id = ? AND c.level_id = ?
          ORDER BY pq.created_at DESC LIMIT 6"
@@ -98,7 +98,7 @@ function fmt_size(int $b): string
     <div class="lg:col-span-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111b2e] p-5">
         <div class="flex items-center justify-between mb-4">
             <h2 class="font-heading font-black text-base text-ink dark:text-white">Recommended for you</h2>
-            <a href="<?= BASE_URL ?>/resources.php<?= $student['program_id'] ? '?program_id=' . (int) $student['program_id'] . '&level_id=' . (int) $student['level_id'] : '' ?>"
+            <a href="resources.php<?= $student['program_id'] ? '?program_id=' . (int) $student['program_id'] . '&level_id=' . (int) $student['level_id'] : '' ?>"
                class="text-xs font-semibold text-scotsaBlue dark:text-blue-400 hover:underline">Browse all</a>
         </div>
 
@@ -116,7 +116,13 @@ function fmt_size(int $b): string
                     </div>
                 </div>
                 <div class="mt-3 flex items-center justify-between">
-                    <span class="text-[11px] text-slate-400"><?= e($typeLabel[$r['resource_type']] ?? $r['resource_type']) ?> · <?= fmt_size((int) $r['file_size']) ?></span>
+                    <span class="text-[11px] text-slate-400">
+                        <?= e($typeLabel[$r['resource_type']] ?? $r['resource_type']) ?>
+                        <?php if ($r['exam_month'] && $r['exam_year']): ?>
+                            · <?= e((EXAM_MONTHS[(int) $r['exam_month']] ?? '') . ' ' . $r['exam_year']) ?>
+                        <?php endif; ?>
+                        · <?= fmt_size((int) $r['file_size']) ?>
+                    </span>
                     <a href="<?= BASE_URL ?>/download.php?id=<?= (int) $r['id'] ?>" class="text-xs font-bold text-scotsaBlue dark:text-blue-400 hover:underline">Download</a>
                 </div>
             </div>
@@ -130,7 +136,7 @@ function fmt_size(int $b): string
         <?php else: ?>
         <div class="rounded-lg border border-dashed border-slate-200 dark:border-white/10 p-8 text-center">
             <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">No resources for your program &amp; level yet.</p>
-            <a href="<?= BASE_URL ?>/resources.php" class="mt-3 inline-block text-xs font-bold text-scotsaBlue dark:text-blue-400 hover:underline">Browse everything</a>
+            <a href="resources.php" class="mt-3 inline-block text-xs font-bold text-scotsaBlue dark:text-blue-400 hover:underline">Browse everything</a>
         </div>
         <?php endif; ?>
     </div>
@@ -178,7 +184,7 @@ function fmt_size(int $b): string
         </table>
     </div>
     <?php else: ?>
-    <p class="text-sm text-slate-400">You haven't downloaded anything yet. <a href="<?= BASE_URL ?>/resources.php" class="font-semibold text-scotsaBlue dark:text-blue-400 hover:underline">browse resources</a> to get started.</p>
+    <p class="text-sm text-slate-400">You haven't downloaded anything yet. <a href="resources.php" class="font-semibold text-scotsaBlue dark:text-blue-400 hover:underline">browse resources</a> to get started.</p>
     <?php endif; ?>
 </div>
 

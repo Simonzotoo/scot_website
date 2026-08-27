@@ -30,9 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $courseId     = (int) ($_POST['course_id'] ?? 0);
         $title        = clean_text($_POST['title'] ?? '');
         $resourceType = $_POST['resource_type'] ?? '';
-        $academicYear = clean_text($_POST['academic_year'] ?? '');
-        $allowed      = ['past_question', 'midsem', 'end_sem', 'lecture_note'];
+        $examMonth    = (int) ($_POST['exam_month'] ?? 0);
+        $examYear     = (int) ($_POST['exam_year'] ?? 0);
+        $allowed      = array_keys(ACTIVE_RESOURCE_TYPES);
         $file         = $_FILES['pdf'] ?? null;
+        $currentYear  = (int) date('Y');
 
         if (!$courseId || !$title) {
             flash('error', 'Please fill in all required fields (course and title).');
@@ -40,6 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (!in_array($resourceType, $allowed, true)) {
             flash('error', 'Invalid resource type selected.');
+            header('Location: uploads.php'); exit;
+        }
+        if ($examMonth < 1 || $examMonth > 12 || $examYear < 2015 || $examYear > $currentYear + 1) {
+            flash('error', 'Please select a valid exam month and year.');
             header('Location: uploads.php'); exit;
         }
         if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
@@ -57,16 +63,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: uploads.php'); exit;
         }
         if ($file['size'] > MAX_UPLOAD_BYTES) {
-            flash('error', 'PDF must not exceed 10 MB. Your file is ' . round($file['size'] / 1048576, 1) . ' MB.');
+            flash('error', 'File must not exceed 10 MB. Your file is ' . round($file['size'] / 1048576, 1) . ' MB.');
             header('Location: uploads.php'); exit;
         }
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime  = $finfo->file($file['tmp_name']);
-        if ($mime !== 'application/pdf') {
-            flash('error', 'Only PDF files are accepted. Detected type: ' . $mime);
+        if (!isset(ALLOWED_RESOURCE_MIME_TYPES[$mime])) {
+            flash('error', 'Unsupported file type. Accepted: PDF, Word, PowerPoint, JPG, PNG. Detected: ' . $mime);
             header('Location: uploads.php'); exit;
         }
+        $ext = ALLOWED_RESOURCE_MIME_TYPES[$mime];
 
         try {
             $stmt = db()->prepare(
@@ -109,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $safeName    = sanitize_filename($course['code']) . '-' . $resourceType . '-' . bin2hex(random_bytes(6));
-        $uniqueName  = $safeName . '.pdf';
+        $uniqueName  = $safeName . '.' . $ext;
         $relativePath = $relativeDir . '/' . $uniqueName;
         $absolutePath = UPLOAD_ROOT . '/' . $relativePath;
 
@@ -122,16 +129,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             db()->prepare(
                 'INSERT INTO past_questions
-                    (course_id, uploaded_by, title, resource_type, academic_year, original_filename, file_path, file_size)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                    (course_id, uploaded_by, title, resource_type, exam_month, exam_year, original_filename, file_path, mime_type, file_size)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             )->execute([
                 $courseId,
                 $admin['id'],
                 $title,
                 $resourceType,
-                $academicYear,
+                $examMonth,
+                $examYear,
                 $file['name'],
                 $relativePath,
+                $mime,
                 $file['size'],
             ]);
         } catch (Throwable $e) {
@@ -222,8 +231,8 @@ $now = time();
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/10
                 bg-gradient-to-r from-scotsaBlue to-[#0d2a5c] dark:from-slate-900 dark:to-slate-800">
         <div>
-            <h2 class="font-heading font-black text-white text-base leading-none">Upload PDF Resource</h2>
-            <p class="mt-1 text-xs text-blue-200/70">PDF only · Max 10 MB · Stored securely</p>
+            <h2 class="font-heading font-black text-white text-base leading-none">Upload Resource</h2>
+            <p class="mt-1 text-xs text-blue-200/70">PDF, Word, PowerPoint, JPG or PNG · Max 10 MB · Stored securely</p>
         </div>
         <div class="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
             <svg class="h-5 w-5 text-scotsaGold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -237,9 +246,9 @@ $now = time();
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="upload">
 
-        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             <!-- Course -->
-            <div class="sm:col-span-2 xl:col-span-2">
+            <div class="sm:col-span-2 xl:col-span-2 xl:row-start-1">
                 <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Course</label>
                 <select class="form-input" name="course_id" required>
                     <option value="">Select a course</option>
@@ -252,30 +261,45 @@ $now = time();
             </div>
 
             <!-- Type -->
-            <div>
+            <div class="xl:col-start-3 xl:row-start-1">
                 <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Type</label>
                 <select class="form-input" name="resource_type">
-                    <option value="past_question">Past Question</option>
-                    <option value="midsem">Midsem Paper</option>
-                    <option value="end_sem">End-of-Sem Paper</option>
-                    <option value="lecture_note">Lecture Note</option>
+                    <?php foreach (ACTIVE_RESOURCE_TYPES as $val => $label): ?>
+                    <option value="<?= e($val) ?>"><?= e($label) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
-            <!-- Academic Year -->
-            <div>
-                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Academic Year</label>
-                <input class="form-input" name="academic_year" placeholder="2024/2025">
+            <!-- Exam month (beneath Type) -->
+            <div class="xl:col-start-3 xl:row-start-2">
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Month</label>
+                <select class="form-input" name="exam_month" required>
+                    <option value="">Month</option>
+                    <?php foreach (EXAM_MONTHS as $val => $label): ?>
+                    <option value="<?= $val ?>" <?= $val === (int) date('n') ? 'selected' : '' ?>><?= e($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Exam year (beneath Month) -->
+            <div class="xl:col-start-3 xl:row-start-3">
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Year</label>
+                <select class="form-input" name="exam_year" required>
+                    <option value="">Year</option>
+                    <?php $curYear = (int) date('Y'); for ($y = $curYear + 1; $y >= 2015; $y--): ?>
+                    <option value="<?= $y ?>" <?= $y === $curYear ? 'selected' : '' ?>><?= $y ?></option>
+                    <?php endfor; ?>
+                </select>
             </div>
 
             <!-- Title -->
-            <div class="sm:col-span-2 xl:col-span-3">
+            <div class="sm:col-span-2 xl:col-span-2 xl:row-start-2">
                 <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Material Title</label>
                 <input class="form-input" name="title" placeholder="e.g. CS101 End-of-Semester Exam 2024/2025" required>
             </div>
 
             <!-- Submit -->
-            <div class="flex items-end">
+            <div class="flex items-end sm:col-span-2 xl:col-span-2 xl:row-start-3">
                 <button class="btn-primary w-full py-2.5 text-sm font-bold gap-2" type="submit">
                     <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
@@ -298,10 +322,12 @@ $now = time();
                       d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
             </svg>
             <p id="drop-label" class="text-sm font-medium text-slate-400 dark:text-slate-400">
-                Drop PDF here or <span class="text-scotsaBlue dark:text-scotsaGold font-bold">browse</span>
+                Drop file here or <span class="text-scotsaBlue dark:text-scotsaGold font-bold">browse</span>
             </p>
-            <p class="text-xs text-slate-300 dark:text-slate-500">PDF · maximum 10 MB</p>
-            <input type="file" name="pdf" id="pdf-input" accept="application/pdf,.pdf" required class="sr-only">
+            <p class="text-xs text-slate-300 dark:text-slate-500">PDF, Word, PowerPoint, JPG or PNG · maximum 10 MB</p>
+            <input type="file" name="pdf" id="pdf-input"
+                   accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,image/jpeg,image/png"
+                   required class="sr-only">
         </div>
     </form>
 </div>
@@ -332,10 +358,9 @@ $now = time();
             </div>
             <select id="resource-type-filter" class="form-input py-1.5 text-sm">
                 <option value="">All types</option>
-                <option value="past_question">Past Question</option>
-                <option value="midsem">Midsem</option>
-                <option value="end_sem">End-of-Sem</option>
-                <option value="lecture_note">Lecture Note</option>
+                <?php foreach (ALL_RESOURCE_TYPES as $val => $label): ?>
+                <option value="<?= e($val) ?>"><?= e($label) ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>
@@ -361,6 +386,10 @@ $now = time();
                     $typeKey    = $u['resource_type'];
                     $typeLabel  = $typeLabels[$typeKey]  ?? $typeKey;
                     $typeColor  = $typeColors[$typeKey]  ?? 'bg-slate-100 text-slate-600';
+                    $periodText = $u['exam_month'] && $u['exam_year']
+                        ? (EXAM_MONTHS[(int) $u['exam_month']] ?? '') . ' ' . $u['exam_year']
+                        : ($u['academic_year'] ?: '');
+                    $fileExt    = strtoupper(pathinfo($u['original_filename'], PATHINFO_EXTENSION) ?: 'FILE');
                 ?>
                 <tr class="border-t border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[.03] transition-colors duration-150 resource-row"
                     data-title="<?= strtolower(e($u['title'])) ?>"
@@ -378,8 +407,8 @@ $now = time();
                     <!-- Title + year -->
                     <td class="px-5 py-3.5 max-w-[220px]">
                         <p class="truncate font-medium text-slate-800 dark:text-slate-100 leading-snug" title="<?= e($u['title']) ?>"><?= e($u['title']) ?></p>
-                        <?php if ($u['academic_year']): ?>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5"><?= e($u['academic_year']) ?></p>
+                        <?php if ($periodText): ?>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5"><?= e($periodText) ?></p>
                         <?php endif; ?>
                     </td>
 
@@ -393,6 +422,7 @@ $now = time();
                     <!-- File size -->
                     <td class="px-5 py-3.5 text-slate-400 dark:text-slate-500 whitespace-nowrap tabular-nums">
                         <?= fmt_bytes((int) $u['file_size']) ?>
+                        <span class="ml-1 rounded bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 text-[9px] font-bold text-slate-400 dark:text-slate-400"><?= e($fileExt) ?></span>
                     </td>
 
                     <!-- Downloads -->
@@ -408,7 +438,8 @@ $now = time();
                     <!-- Actions -->
                     <td class="px-5 py-3.5 whitespace-nowrap">
                         <div class="flex items-center justify-end gap-1.5">
-                            <!-- Preview -->
+                            <!-- Preview (PDF.js can only render PDFs) -->
+                            <?php if (($u['mime_type'] ?? '') === 'application/pdf'): ?>
                             <button type="button"
                                     data-pdf-id="<?= (int) $u['id'] ?>"
                                     data-pdf-title="<?= e($u['title']) ?>"
@@ -424,6 +455,7 @@ $now = time();
                                 </svg>
                                 Preview
                             </button>
+                            <?php endif; ?>
 
                             <!-- Download -->
                             <a href="<?= e($dlUrl) ?>"
@@ -492,7 +524,7 @@ $now = time();
             <div>
                 <p class="font-heading font-black text-slate-700 dark:text-slate-200 text-base">No resources yet</p>
                 <p class="text-sm text-slate-400 dark:text-slate-500 mt-1 max-w-xs">
-                    Upload your first PDF using the form above to start building the resource library.
+                    Upload your first resource using the form above to start building the resource library.
                 </p>
             </div>
             <button onclick="document.getElementById('pdf-input').click()"
@@ -527,8 +559,15 @@ $now = time();
         unhighlight();
         const file = e.dataTransfer?.files?.[0];
         if (!file) return;
-        if (file.type !== 'application/pdf') {
-            window.ScotSA?.toast('error', 'Only PDF files are accepted.');
+        const allowedTypes = [
+            'application/pdf', 'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'image/jpeg', 'image/png',
+        ];
+        if (!allowedTypes.includes(file.type)) {
+            window.ScotSA?.toast('error', 'Unsupported file type. Accepted: PDF, Word, PowerPoint, JPG, PNG.');
             return;
         }
         const dt = new DataTransfer();

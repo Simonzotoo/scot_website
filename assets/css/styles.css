@@ -245,14 +245,6 @@ body {
 }
 [data-theme="dark"] .ann-card:hover { border-color: rgba(212,175,55,.25) !important; }
 
-/* ── Hero gradient overlay ───────────────────────────────── */
-.hero-fade-bottom {
-    background: linear-gradient(to bottom, rgba(7,23,47,0), white);
-}
-[data-theme="dark"] .hero-fade-bottom {
-    background: linear-gradient(to bottom, rgba(7,23,47,0), #0b1120) !important;
-}
-
 /* ── Theme icon visibility ───────────────────────────────── */
 [data-theme="dark"] [data-theme-sun],
 .dark [data-theme-sun]              { display: block; }
@@ -355,13 +347,21 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 ════════════════════════════════════════════════════════════ */
 .hero-grid {
     background:
-        linear-gradient(140deg, rgba(10,31,68,.94) 0%, rgba(7,23,47,.90) 50%, rgba(13,42,92,.86) 100%),
+        linear-gradient(140deg, rgba(10,31,68,.62) 0%, rgba(7,23,47,.56) 50%, rgba(13,42,92,.50) 100%),
         radial-gradient(ellipse at 78% 10%, rgba(212,175,55,.28) 0%, transparent 52%),
-        radial-gradient(ellipse at 20% 80%, rgba(10,31,68,.55) 0%, transparent 50%),
-        url("../images/hero/IMG_4625.JPEG");
+        radial-gradient(ellipse at 20% 80%, rgba(10,31,68,.45) 0%, transparent 50%),
+        url("../images/hero/hero-orientation-team.jpg");
     background-position: center;
     background-size: cover;
     position: relative;
+}
+
+/* Overlay is lighter now so the photo actually shows through; give the
+   white copy a shadow so it still reads clearly over a busy photo. */
+.hero-grid h1,
+.hero-grid p,
+.hero-grid .eyebrow {
+    text-shadow: 0 2px 12px rgba(0,0,0,.55);
 }
 
 /* Animated gold orb */
@@ -1070,8 +1070,10 @@ img.lazy-fade.loaded { opacity: 1; }
 .swal-scotsa-progress {
     background: rgba(10,31,68,.20) !important;
 }
-.swal-scotsa-toast .swal2-success .swal-scotsa-progress { background: rgba(16,185,129,.40) !important; }
-.swal-scotsa-toast .swal2-error   .swal-scotsa-progress { background: rgba(239,68,68,.40) !important; }
+.swal-scotsa-toast .swal2-success .swal-scotsa-progress,
+.swal-scotsa-popup .swal2-success .swal-scotsa-progress { background: rgba(16,185,129,.40) !important; }
+.swal-scotsa-toast .swal2-error   .swal-scotsa-progress,
+.swal-scotsa-popup .swal2-error   .swal-scotsa-progress { background: rgba(239,68,68,.40) !important; }
 
 /* ── Dark mode ──────────────────────────────────────────── */
 [data-theme="dark"] .swal-scotsa-popup {
