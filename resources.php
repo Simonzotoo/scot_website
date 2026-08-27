@@ -3,8 +3,6 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/security.php';
 $pageTitle = 'Academic Resources: SCOTSA';
 
-$programs = $levels = $semesters = [];
-$resources = [];
 $filters = [
     'q'          => trim($_GET['q'] ?? ''),
     'program_id' => $_GET['program_id'] ?? '',
@@ -15,67 +13,8 @@ $filters = [
     'exam_year'  => $_GET['exam_year'] ?? '',
 ];
 
-try {
-    $programs  = db()->query('SELECT id, name FROM programs ORDER BY name')->fetchAll();
-    $levels    = db()->query('SELECT id, name FROM levels ORDER BY id')->fetchAll();
-    $semesters = db()->query('SELECT id, name FROM semesters ORDER BY id')->fetchAll();
-    $examYears = db()->query(
-        'SELECT DISTINCT exam_year FROM past_questions WHERE exam_year IS NOT NULL ORDER BY exam_year DESC'
-    )->fetchAll(PDO::FETCH_COLUMN);
-
-    // Only resource types currently open for browsing (see ACTIVE_RESOURCE_TYPES
-    // in includes/config.php) — existing rows of other types, if any, stay in
-    // the DB but are hidden from the public catalog for now.
-    $activeTypePlaceholders = implode(',', array_fill(0, count(ACTIVE_RESOURCE_TYPES), '?'));
-    $where = "WHERE pq.status = \"active\" AND pq.resource_type IN ($activeTypePlaceholders)";
-    $params = array_keys(ACTIVE_RESOURCE_TYPES);
-
-    if ($filters['q'] !== '') {
-        $where .= ' AND (c.code LIKE ? OR c.title LIKE ? OR pq.title LIKE ?)';
-        $t = '%' . $filters['q'] . '%';
-        array_push($params, $t, $t, $t);
-    }
-    foreach (['program_id' => 'c.program_id', 'level_id' => 'c.level_id', 'semester_id' => 'c.semester_id'] as $key => $col) {
-        if ($filters[$key] !== '') {
-            $where .= " AND {$col} = ?";
-            $params[] = (int) $filters[$key];
-        }
-    }
-    if ($filters['type'] !== '') {
-        $where .= ' AND pq.resource_type = ?';
-        $params[] = $filters['type'];
-    }
-    if ($filters['exam_month'] !== '') {
-        $where .= ' AND pq.exam_month = ?';
-        $params[] = (int) $filters['exam_month'];
-    }
-    if ($filters['exam_year'] !== '') {
-        $where .= ' AND pq.exam_year = ?';
-        $params[] = (int) $filters['exam_year'];
-    }
-
-    $joins = 'FROM past_questions pq
-              JOIN courses c ON c.id = pq.course_id
-              JOIN programs p ON p.id = c.program_id
-              JOIN levels l ON l.id = c.level_id
-              JOIN semesters s ON s.id = c.semester_id';
-
-    $countStmt = db()->prepare("SELECT COUNT(*) $joins $where");
-    $countStmt->execute($params);
-    $pg = paginate((int) $countStmt->fetchColumn(), 12);
-
-    $sql = "SELECT pq.*, c.code, c.title AS course_title, p.name AS program_name, l.name AS level_name, s.name AS semester_name
-            $joins
-            $where
-            ORDER BY pq.created_at DESC
-            LIMIT {$pg['perPage']} OFFSET {$pg['offset']}";
-    $stmt = db()->prepare($sql);
-    $stmt->execute($params);
-    $resources = $stmt->fetchAll();
-} catch (Throwable $e) {
-    $resources = [];
-    $pg = paginate(0, 12);
-}
+['programs' => $programs, 'levels' => $levels, 'semesters' => $semesters, 'examYears' => $examYears] = fetch_resource_filter_options();
+['resources' => $resources, 'pagination' => $pg] = search_resources($filters, 12);
 
 $pageQuery = $_GET;
 unset($pageQuery['page']);
@@ -85,7 +24,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ── Page Hero ──────────────────────────────────────── -->
-<section class="page-hero text-white">
+<section class="page-hero text-white"<?= $pageHeroStyle ?>>
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10" style="padding-top:4.5rem; padding-bottom:4.5rem;">
         <nav class="mb-6 flex items-center gap-2 text-xs" style="color:rgba(191,219,254,.55);">
             <a href="<?= BASE_URL ?>/index.php" class="hover:text-white transition">Home</a>

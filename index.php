@@ -12,13 +12,32 @@ try {
     $announcements = [];
 }
 
+$leadership = [];
+try {
+    $leadership = db()->query(
+        "SELECT role, name, photo_path FROM team_members WHERE roster = 'leadership' ORDER BY sort_order, id"
+    )->fetchAll();
+} catch (Throwable $e) {
+    $leadership = [];
+}
+
+$heroImage = null;
+try {
+    $stmt = db()->prepare('SELECT setting_value FROM site_settings WHERE setting_key = ?');
+    $stmt->execute(['hero_image']);
+    $heroImage = $stmt->fetchColumn() ?: null;
+} catch (Throwable $e) {
+    $heroImage = null;
+}
+
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ═══════════════════════════════════════════════════════════
      HERO
 ════════════════════════════════════════════════════════════ -->
-<section class="hero-grid text-white relative overflow-hidden">
+<section class="hero-grid text-white relative overflow-hidden"
+         <?php if ($heroImage): ?>style="--hero-image:url('<?= e(IMAGES_URL . '/' . $heroImage) ?>')"<?php endif; ?>>
     <!-- Animated gold orb -->
     <div class="hero-orb"></div>
 
@@ -71,28 +90,24 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <?php foreach ([
-            ['Dean, School of Computing and Technology', 'Dr. Patrick Kudjo', 'DR.PATRICK KUDJO DEAN.PNG'],
-            ['Head of Department, Business Computing', 'Mr. Charles A. Babbage Jnr', 'MR.CHARLES BABBAGE JNR ASIEDU  HOD BUSINESS COMPUTING .jpg'],
-            ['Head of Department, Information Technology', 'Dr. Amankwa', null],
-            ['Head of Department, Mathematics Application', 'Dr. Leonard Kyei', null],
-            ['Patron', 'Mr. Edwin Agbah', 'mr edwin agbah patron.jpg'],
-        ] as $i => [$title, $name, $photo]): ?>
+        <?php foreach ($leadership as $i => $leader):
+            $displayName = $leader['name'] ?: 'Awaiting Appointment';
+        ?>
         <div class="card-hover group rounded-2xl border border-slate-200 bg-white overflow-hidden fade-in fade-in-delay-<?= ($i % 3) + 1 ?>">
             <div class="relative overflow-hidden bg-slate-100" style="padding-top:115%;">
-                <?php if ($photo): ?>
-                <img src="<?= IMAGES_URL ?>/executives/<?= rawurlencode($photo) ?>" alt="<?= e($name) ?>"
+                <?php if ($leader['photo_path']): ?>
+                <img src="<?= IMAGES_URL ?>/<?= e($leader['photo_path']) ?>" alt="<?= e($displayName) ?>"
                      class="absolute inset-0 h-full w-full object-cover"
                      style="object-position:50% 15%;"
                      loading="lazy"
                      onerror="this.src='<?= IMAGES_URL ?>/placeholders/avatar.svg'; this.onerror=null;">
                 <?php else: ?>
-                <img src="<?= avatar_url(null, $name) ?>" alt="" class="absolute inset-0 h-full w-full object-cover">
+                <img src="<?= avatar_url(null, $displayName) ?>" alt="" class="absolute inset-0 h-full w-full object-cover">
                 <?php endif; ?>
             </div>
             <div class="p-5 text-center">
-                <p class="font-heading font-bold text-ink text-sm"><?= e($name) ?></p>
-                <p class="mt-1 text-xs text-slate-400 leading-5"><?= e($title) ?></p>
+                <p class="font-heading font-bold text-ink text-sm"><?= e($displayName) ?></p>
+                <p class="mt-1 text-xs text-slate-400 leading-5"><?= e($leader['role']) ?></p>
             </div>
         </div>
         <?php endforeach; ?>
@@ -125,19 +140,13 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="grid gap-4 sm:grid-cols-1 lg:gap-3 fade-in fade-in-delay-2">
             <?php foreach ([
-                ['academic-cap',  'Academic Access',    'scotsaBlue', 'Past questions and course notes organized by program, level, semester, and course, always at your fingertips.'],
-                ['megaphone',     'Department Updates', 'gold',       'Official announcements, event notices, and news published from one trusted, verified student source.'],
-                ['rocket-launch', 'Built to Scale',     'scotsaBlue', 'A growing platform designed to support new programs, analytics, and advanced student services over time.'],
-            ] as [$iconName, $title, $accent, $body]): ?>
-            <div class="card-hover flex gap-4 rounded-xl border border-slate-200 bg-white p-5 group">
-                <div class="flex-shrink-0 mt-0.5 grid h-10 w-10 place-items-center rounded-xl <?= $accent === 'gold' ? 'text-scotsaGold' : 'text-scotsaBlue' ?>"
-                     style="background:rgba(10,31,68,.06);">
-                    <?= icon($iconName, 'h-5 w-5') ?>
-                </div>
-                <div>
-                    <h3 class="font-heading font-bold text-scotsaBlue group-hover:text-scotsaLight transition-colors"><?= $title ?></h3>
-                    <p class="mt-1.5 text-sm leading-6 text-slate-500"><?= $body ?></p>
-                </div>
+                ['Academic Access',    'Past questions and course notes organized by program, level, semester, and course, always at your fingertips.'],
+                ['Department Updates', 'Official announcements, event notices, and news published from one trusted, verified student source.'],
+                ['Built to Scale',     'A growing platform designed to support new programs, analytics, and advanced student services over time.'],
+            ] as [$title, $body]): ?>
+            <div class="card-hover rounded-xl border border-slate-200 bg-white p-5 border-l-4 border-l-scotsaBlue">
+                <h3 class="font-heading font-bold text-scotsaBlue"><?= $title ?></h3>
+                <p class="mt-1.5 text-sm leading-6 text-slate-500"><?= $body ?></p>
             </div>
             <?php endforeach; ?>
         </div>
@@ -214,15 +223,11 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="grid gap-5 max-w-2xl mx-auto sm:grid-cols-2">
         <?php foreach ([
-            ['document',   'Past Questions', 'Examinations from previous academic years, organized by course and level.', BASE_URL . '/resources.php?type=past_question', '#0A1F44', 'rgba(10,31,68,.06)'],
-            ['book-open',  'Lecture Notes',  'Curated notes shared by peers and course coordinators.',                    BASE_URL . '/resources.php?type=lecture_note',  '#b8961e', 'rgba(212,175,55,.10)'],
-        ] as $i => [$iconName, $title, $desc, $href, $accent, $iconBg]): ?>
+            ['Past Questions', 'Examinations from previous academic years, organized by course and level.', BASE_URL . '/resources.php?type=past_question'],
+            ['Lecture Notes',  'Curated notes shared by peers and course coordinators.',                    BASE_URL . '/resources.php?type=lecture_note'],
+        ] as $i => [$title, $desc, $href]): ?>
         <a href="<?= $href ?>"
            class="card-hover group rounded-xl border border-slate-200 bg-white p-6 text-left fade-in fade-in-delay-<?= $i + 1 ?>">
-            <div class="grid h-11 w-11 place-items-center rounded-xl mb-5 transition-transform duration-200 group-hover:scale-110"
-                 style="background:<?= $iconBg ?>; color:<?= $accent ?>;">
-                <?= icon($iconName, 'h-5 w-5') ?>
-            </div>
             <h3 class="font-heading font-bold text-ink group-hover:text-scotsaBlue transition-colors"><?= $title ?></h3>
             <p class="mt-2 text-sm leading-6 text-slate-500"><?= $desc ?></p>
             <span class="mt-5 inline-flex items-center gap-1 text-xs font-bold text-scotsaBlue group-hover:gap-2 transition-all">
@@ -239,7 +244,7 @@ require_once __DIR__ . '/includes/header.php';
 <!-- ═══════════════════════════════════════════════════════════
      FULL-WIDTH CTA BANNER
 ════════════════════════════════════════════════════════════ -->
-<section class="page-hero text-white relative overflow-hidden">
+<section class="page-hero text-white relative overflow-hidden"<?= $pageHeroStyle ?>>
     <!-- Decorative dots pattern -->
     <div class="absolute inset-0 pointer-events-none" style="background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px); background-size:24px 24px;"></div>
 

@@ -22,3 +22,7 @@ node_modules/
 
 # Vendor
 vendor/
+
+# PHPUnit
+.phpunit.cache/
+.phpunit.result.cache

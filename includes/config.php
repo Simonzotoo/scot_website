@@ -102,8 +102,11 @@ define('STUDENT_EMAIL_DOMAIN', env('STUDENT_EMAIL_DOMAIN', 'wiuc-ghana.edu.gh'))
 
 define('DB_HOST', env('DB_HOST', '127.0.0.1'));
 define('DB_NAME', env('DB_NAME', 'scotsa_platform'));
-define('DB_USER', env('DB_USER', 'root'));
-define('DB_PASS', env('DB_PASS', ''));
+// No fallback default here on purpose: silently connecting as root with a
+// blank password if .env is ever missing/misread is worse than failing
+// loudly and telling whoever's deploying exactly what to fix.
+define('DB_USER', env('DB_USER') ?? throw new RuntimeException('DB_USER is not set — check .env'));
+define('DB_PASS', env('DB_PASS') ?? throw new RuntimeException('DB_PASS is not set — check .env'));
 
 require_once __DIR__ . '/security_headers.php';
 apply_security_headers();
@@ -114,3 +117,5 @@ storage_bootstrap();
 require_once __DIR__ . '/images.php';
 require_once __DIR__ . '/icons.php';
 require_once __DIR__ . '/avatars.php';
+require_once __DIR__ . '/media.php';
+require_once __DIR__ . '/resource_filters.php';

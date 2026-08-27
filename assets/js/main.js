@@ -62,8 +62,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        /* Close on nav link click (after route change) */
-        mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));
+        /* Close on nav link click (after route change). For same-page
+           anchor links (e.g. "Programmes"), the menu's own collapse
+           animation shifts the page layout at the same moment the browser
+           tries to jump to the anchor, so the native jump lands in the
+           wrong place or seems to do nothing. Handle those manually: close
+           first, then scroll once the collapse animation has finished. */
+        mobileMenu.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', e => {
+                const url = new URL(a.href, window.location.href);
+                const isSamePageAnchor = url.hash
+                    && url.pathname === window.location.pathname
+                    && url.hash.length > 1;
+
+                if (isSamePageAnchor) {
+                    e.preventDefault();
+                    const target = document.querySelector(url.hash);
+                    closeNav();
+                    setTimeout(() => {
+                        target?.scrollIntoView({ behavior: 'smooth' });
+                        history.pushState(null, '', url.hash);
+                    }, 320);
+                } else {
+                    closeNav();
+                }
+            });
+        });
     }
 
     /* ════════════════════════════════════════════════════════

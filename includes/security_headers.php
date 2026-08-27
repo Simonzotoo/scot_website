@@ -29,10 +29,14 @@ function apply_security_headers(): void
 
     $secure = is_request_secure();
 
-    if (APP_ENV === 'production' && !$secure && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
+    if (APP_ENV === 'production' && !$secure) {
         $host = $_SERVER['HTTP_HOST'] ?? '';
         if ($host !== '') {
-            header('Location: https://' . $host . ($_SERVER['REQUEST_URI'] ?? '/'), true, 301);
+            // 307 (not 301) for non-GET so the method and POST body survive
+            // the redirect instead of being dropped — a login form posted
+            // over plain HTTP must still land on HTTPS, not just GETs.
+            $isGet = in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'HEAD'], true);
+            header('Location: https://' . $host . ($_SERVER['REQUEST_URI'] ?? '/'), true, $isGet ? 301 : 307);
             exit;
         }
     }
@@ -45,4 +49,17 @@ function apply_security_headers(): void
     header('X-Frame-Options: SAMEORIGIN');
     header('Referrer-Policy: strict-origin-when-cross-origin');
     header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
+
+    // Allow-list built from what this app actually loads: SweetAlert2 and
+    // PDF.js from their CDNs, Google Fonts, and the Google Maps embed on
+    // contact.php. style-src needs 'unsafe-inline' because templates use
+    // inline style="..." attributes throughout.
+    header("Content-Security-Policy: "
+        . "default-src 'self'; "
+        . "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        . "font-src https://fonts.gstatic.com; "
+        . "img-src 'self' data:; "
+        . "frame-src https://www.google.com; "
+        . "base-uri 'self'; form-action 'self'");
 }
