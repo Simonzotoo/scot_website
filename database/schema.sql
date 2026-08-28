@@ -107,10 +107,12 @@ VALUES ('SCOTSA Super Admin', 'admin@scotsa.edu', '$2y$10$qc99.Ww5fTiu01uEZYybQe
 -- Default password: Admin@12345. Change it after first login.
 
 INSERT INTO programs (name, slug, description) VALUES
-('Information Technology', 'information-technology', 'Systems, networking, software tools, and applied computing.'),
-('Computer Science', 'computer-science', 'Programming, algorithms, computing theory, and software engineering.'),
-('Cyber Security', 'cyber-security', 'Security operations, digital forensics, networks, and risk management.'),
-('Data Science', 'data-science', 'Statistics, machine learning, data engineering, and analytics.');
+('BSc Information Technology', 'bsc-information-technology', 'Systems, networking, software tools, and applied computing for real-world IT roles.'),
+('BSc Computing and Actuarial Science', 'bsc-computing-and-actuarial-science', 'Combines computing fundamentals with actuarial mathematics and statistics for careers in insurance, finance, and risk analysis.'),
+('BSc Cybersecurity', 'bsc-cybersecurity', 'Security operations, digital forensics, network defence, and risk management.'),
+('BSc Artificial Intelligence and Robotics', 'bsc-artificial-intelligence-and-robotics', 'Machine learning, intelligent systems, and robotics engineering at the frontier of computing.'),
+('BSc Management with Information Technology', 'bsc-management-with-information-technology', 'Blends business management with IT skills for technology-driven organisational leadership.'),
+('Diploma in Information Technology', 'diploma-in-information-technology', 'A foundational two-year diploma in practical information technology skills.');
 
 INSERT INTO levels (name, sort_order) VALUES
 ('Level 100', 100),

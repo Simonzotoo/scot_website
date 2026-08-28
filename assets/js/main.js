@@ -30,67 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ════════════════════════════════════════════════════════
-       MOBILE NAV — smooth slide
-    ════════════════════════════════════════════════════════ */
-    const menuBtn    = document.querySelector('[data-menu-button]');
-    const mobileMenu = document.querySelector('[data-mobile-menu]');
-
-    if (menuBtn && mobileMenu) {
-        let isOpen = false;
-
-        const openNav = () => {
-            isOpen = true;
-            mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
-            mobileMenu.style.opacity   = '1';
-            menuBtn.setAttribute('aria-expanded', 'true');
-            menuBtn.classList.add('bg-slate-100');
-        };
-
-        const closeNav = () => {
-            isOpen = false;
-            mobileMenu.style.maxHeight = '0';
-            mobileMenu.style.opacity   = '0';
-            menuBtn.setAttribute('aria-expanded', 'false');
-            menuBtn.classList.remove('bg-slate-100');
-        };
-
-        menuBtn.addEventListener('click', () => isOpen ? closeNav() : openNav());
-
-        document.addEventListener('click', e => {
-            if (isOpen && !menuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
-                closeNav();
-            }
-        });
-
-        /* Close on nav link click (after route change). For same-page
-           anchor links (e.g. "Programmes"), the menu's own collapse
-           animation shifts the page layout at the same moment the browser
-           tries to jump to the anchor, so the native jump lands in the
-           wrong place or seems to do nothing. Handle those manually: close
-           first, then scroll once the collapse animation has finished. */
-        mobileMenu.querySelectorAll('a').forEach(a => {
-            a.addEventListener('click', e => {
-                const url = new URL(a.href, window.location.href);
-                const isSamePageAnchor = url.hash
-                    && url.pathname === window.location.pathname
-                    && url.hash.length > 1;
-
-                if (isSamePageAnchor) {
-                    e.preventDefault();
-                    const target = document.querySelector(url.hash);
-                    closeNav();
-                    setTimeout(() => {
-                        target?.scrollIntoView({ behavior: 'smooth' });
-                        history.pushState(null, '', url.hash);
-                    }, 320);
-                } else {
-                    closeNav();
-                }
-            });
-        });
-    }
-
-    /* ════════════════════════════════════════════════════════
        PASSWORD VISIBILITY TOGGLE
     ════════════════════════════════════════════════════════ */
     document.querySelectorAll('[data-password-toggle]').forEach(btn => {
@@ -151,69 +90,137 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ════════════════════════════════════════════════════════
-       SCROLL ANIMATIONS (IntersectionObserver)
+       HERO CAROUSEL (homepage)
     ════════════════════════════════════════════════════════ */
-    const io = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                io.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.07, rootMargin: '0px 0px -28px 0px' });
+    const heroSection = document.getElementById('hero-carousel');
 
-    document.querySelectorAll('.fade-in, .fade-left').forEach(el => io.observe(el));
+    if (heroSection) {
+        const heroSlides  = Array.from(heroSection.querySelectorAll('[data-slide]'));
+        const heroDots    = Array.from(document.querySelectorAll('#hero-dots [data-dot]'));
+        const heroPrevBtn = document.getElementById('hero-prev');
+        const heroNextBtn = document.getElementById('hero-next');
+        const headlineEl  = document.getElementById('hero-headline');
+        const subtextEl   = document.getElementById('hero-subtext');
+        const watchBtn    = document.getElementById('hero-watch-btn');
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let heroIndex = 0;
+        let heroTimer = null;
 
-    /* ════════════════════════════════════════════════════════
-       COUNT-UP ANIMATION
-    ════════════════════════════════════════════════════════ */
-    const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-
-    function animateCount(el) {
-        const target   = parseFloat(el.dataset.count);
-        const suffix   = el.dataset.suffix || '';
-        const prefix   = el.dataset.prefix || '';
-        const duration = 1600;
-        const start    = performance.now();
-
-        function step(now) {
-            const elapsed  = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const value    = easeOutCubic(progress) * target;
-            el.textContent = prefix + (Number.isInteger(target) ? Math.round(value) : value.toFixed(1)) + suffix;
-            if (progress < 1) requestAnimationFrame(step);
+        function toEmbedUrl(url) {
+            try {
+                const u = new URL(url);
+                if (u.hostname.includes('youtu.be')) {
+                    return 'https://www.youtube.com/embed/' + u.pathname.slice(1);
+                }
+                if (u.hostname.includes('youtube.com')) {
+                    const id = u.searchParams.get('v');
+                    if (id) return 'https://www.youtube.com/embed/' + id;
+                    if (u.pathname.startsWith('/embed/')) return url;
+                }
+                if (u.hostname.includes('vimeo.com')) {
+                    const id = u.pathname.split('/').filter(Boolean).pop();
+                    return 'https://player.vimeo.com/video/' + id;
+                }
+            } catch (err) { /* not a valid URL yet; fall through */ }
+            return url;
         }
-        requestAnimationFrame(step);
-    }
 
-    const countIo = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                animateCount(entry.target);
-                countIo.unobserve(entry.target);
+        function showHeroSlide(i) {
+            heroIndex = (i + heroSlides.length) % heroSlides.length;
+            heroSlides.forEach((s, idx) => {
+                s.classList.toggle('active', idx === heroIndex);
+                const bgVideo = s.querySelector('.hero-bg-video');
+                if (bgVideo) {
+                    if (idx === heroIndex && !reduceMotion) {
+                        bgVideo.play().catch(() => {}); // ignore autoplay-blocked rejections
+                    } else {
+                        bgVideo.pause();
+                    }
+                }
+            });
+            heroDots.forEach((d, idx) => d.classList.toggle('active', idx === heroIndex));
+
+            const active = heroSlides[heroIndex];
+            if (headlineEl && active.dataset.headline) headlineEl.textContent = active.dataset.headline;
+            if (subtextEl && active.dataset.subtext) subtextEl.textContent = active.dataset.subtext;
+
+            if (watchBtn) {
+                const videoUrl = active.dataset.video || '';
+                watchBtn.classList.toggle('hidden', !videoUrl);
+                watchBtn.dataset.videoEmbed = videoUrl ? toEmbedUrl(videoUrl) : '';
             }
-        });
-    }, { threshold: 0.5 });
+        }
 
-    document.querySelectorAll('[data-count]').forEach(el => countIo.observe(el));
+        function stopHeroAutoplay() {
+            if (heroTimer) clearInterval(heroTimer);
+            heroTimer = null;
+        }
+
+        function startHeroAutoplay() {
+            if (reduceMotion || heroSlides.length < 2) return;
+            stopHeroAutoplay();
+            heroTimer = setInterval(() => showHeroSlide(heroIndex + 1), 6000);
+        }
+
+        if (heroSlides.length) {
+            showHeroSlide(0);
+            startHeroAutoplay();
+
+            heroPrevBtn?.addEventListener('click', () => { showHeroSlide(heroIndex - 1); startHeroAutoplay(); });
+            heroNextBtn?.addEventListener('click', () => { showHeroSlide(heroIndex + 1); startHeroAutoplay(); });
+            heroDots.forEach(dot => dot.addEventListener('click', () => {
+                showHeroSlide(parseInt(dot.dataset.dot, 10));
+                startHeroAutoplay();
+            }));
+
+            heroSection.addEventListener('mouseenter', stopHeroAutoplay);
+            heroSection.addEventListener('mouseleave', startHeroAutoplay);
+        }
+
+        /* Video modal — only loads an <iframe> once a viewer taps "Watch" */
+        const videoModal = document.getElementById('video-modal');
+        const videoFrame  = document.getElementById('video-modal-frame');
+        const videoClose  = document.getElementById('video-modal-close');
+
+        function openVideoModal(embedUrl) {
+            if (!videoModal || !videoFrame || !embedUrl) return;
+            videoFrame.innerHTML = '<iframe src="' + embedUrl + '" title="Video" frameborder="0" ' +
+                'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+            videoModal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVideoModal() {
+            if (!videoModal) return;
+            videoModal.classList.remove('open');
+            document.body.style.overflow = '';
+            setTimeout(() => { if (videoFrame) videoFrame.innerHTML = ''; }, 300);
+        }
+
+        watchBtn?.addEventListener('click', () => openVideoModal(watchBtn.dataset.videoEmbed));
+        videoClose?.addEventListener('click', closeVideoModal);
+        videoModal?.addEventListener('click', e => { if (e.target === videoModal) closeVideoModal(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && videoModal?.classList.contains('open')) closeVideoModal();
+        });
+    }
 
     /* ════════════════════════════════════════════════════════
        GALLERY CATEGORY FILTERS (animated transition)
     ════════════════════════════════════════════════════════ */
-    const filterTabs   = document.querySelectorAll('[data-filter]');
-    const galleryItems = document.querySelectorAll('[data-category]');
+    const galleryFilterTabs  = document.querySelectorAll('[data-gallery-filter]');
+    const galleryFilterItems = document.querySelectorAll('[data-gallery-category]');
 
-    filterTabs.forEach(tab => {
+    galleryFilterTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            filterTabs.forEach(t => t.classList.remove('filter-active'));
+            galleryFilterTabs.forEach(t => t.classList.remove('filter-active'));
             tab.classList.add('filter-active');
-            const filter = tab.dataset.filter;
+            const filter = tab.dataset.galleryFilter;
 
-            galleryItems.forEach(item => {
-                const show = filter === 'all' || item.dataset.category === filter;
+            galleryFilterItems.forEach(item => {
+                const show = filter === 'All' || item.dataset.galleryCategory === filter;
                 if (show) {
                     item.style.display = 'block';
-                    /* Small delay for re-paint, then fade in */
                     item.style.opacity = '0';
                     item.style.transform = 'scale(0.96)';
                     requestAnimationFrame(() => {
@@ -230,91 +237,176 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ════════════════════════════════════════════════════════
-       LIGHTBOX
+       GALLERY LIGHTBOX
     ════════════════════════════════════════════════════════ */
-    const lightbox      = document.getElementById('lightbox');
-    const lightboxImg   = document.getElementById('lightbox-img');
-    const lightboxCap   = document.getElementById('lightbox-caption');
-    const lightboxClose = document.getElementById('lightbox-close');
-    const allImages     = [];
-    let   currentIndex  = 0;
+    const galleryLightbox = document.getElementById('gallery-lightbox');
 
-    if (lightbox && lightboxImg) {
-        const triggers = document.querySelectorAll('[data-lightbox]');
+    if (galleryLightbox) {
+        const glImg     = document.getElementById('gallery-lightbox-img');
+        const glCaption = document.getElementById('gallery-lightbox-caption');
+        const glClose   = document.getElementById('gallery-lightbox-close');
+        const glPrev    = document.getElementById('gallery-lightbox-prev');
+        const glNext    = document.getElementById('gallery-lightbox-next');
 
-        triggers.forEach((item, i) => {
-            allImages.push({ src: item.dataset.lightbox, caption: item.dataset.caption || '' });
+        const glTriggers = Array.from(document.querySelectorAll('[data-gallery-lightbox]'));
+        const glItems = glTriggers.map(el => ({
+            src: el.dataset.galleryLightbox,
+            caption: el.dataset.galleryCaption || '',
+        }));
+        let glIndex = 0;
 
-            item.addEventListener('click', () => {
-                currentIndex = i;
-                openLightbox(allImages[i].src, allImages[i].caption);
-            });
-        });
-
-        function openLightbox(src, caption) {
-            lightboxImg.src = src;
-            lightboxImg.alt = caption;
-            if (lightboxCap) lightboxCap.textContent = caption;
-            lightbox.classList.add('open');
+        function openGalleryLightbox(i) {
+            if (!glItems.length) return;
+            glIndex = (i + glItems.length) % glItems.length;
+            const item = glItems[glIndex];
+            if (glImg) { glImg.src = item.src; glImg.alt = item.caption; }
+            if (glCaption) glCaption.textContent = item.caption;
+            galleryLightbox.classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
-        function closeLightbox() {
-            lightbox.classList.remove('open');
+        function closeGalleryLightbox() {
+            galleryLightbox.classList.remove('open');
             document.body.style.overflow = '';
-            setTimeout(() => { lightboxImg.src = ''; }, 300);
+            setTimeout(() => { if (glImg) glImg.src = ''; }, 300);
         }
 
-        function prevImage() {
-            currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
-            openLightbox(allImages[currentIndex].src, allImages[currentIndex].caption);
-        }
+        glTriggers.forEach((el, i) => el.addEventListener('click', () => openGalleryLightbox(i)));
 
-        function nextImage() {
-            currentIndex = (currentIndex + 1) % allImages.length;
-            openLightbox(allImages[currentIndex].src, allImages[currentIndex].caption);
-        }
-
-        lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-        lightboxClose?.addEventListener('click', closeLightbox);
+        galleryLightbox.addEventListener('click', e => { if (e.target === galleryLightbox) closeGalleryLightbox(); });
+        glClose?.addEventListener('click', closeGalleryLightbox);
+        glPrev?.addEventListener('click', e => { e.stopPropagation(); openGalleryLightbox(glIndex - 1); });
+        glNext?.addEventListener('click', e => { e.stopPropagation(); openGalleryLightbox(glIndex + 1); });
         document.addEventListener('keydown', e => {
-            if (!lightbox.classList.contains('open')) return;
-            if (e.key === 'Escape')      closeLightbox();
-            if (e.key === 'ArrowLeft')   prevImage();
-            if (e.key === 'ArrowRight')  nextImage();
+            if (!galleryLightbox.classList.contains('open')) return;
+            if (e.key === 'Escape')     closeGalleryLightbox();
+            if (e.key === 'ArrowLeft')  openGalleryLightbox(glIndex - 1);
+            if (e.key === 'ArrowRight') openGalleryLightbox(glIndex + 1);
         });
-
-        /* Nav arrows */
-        const prevBtn = document.getElementById('lightbox-prev');
-        const nextBtn = document.getElementById('lightbox-next');
-        prevBtn?.addEventListener('click', e => { e.stopPropagation(); prevImage(); });
-        nextBtn?.addEventListener('click', e => { e.stopPropagation(); nextImage(); });
     }
 
     /* ════════════════════════════════════════════════════════
-       NAVBAR SCROLL SHADOW + SHRINK
+       FACULTY BIO MODAL
     ════════════════════════════════════════════════════════ */
-    const header = document.querySelector('header');
-    if (header) {
-        let ticking = false;
-        const onScroll = () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const y = window.scrollY;
-                    if (y > 8) {
-                        header.classList.add('shadow-md');
-                        header.classList.add('nav-scrolled');
-                    } else {
-                        header.classList.remove('shadow-md');
-                        header.classList.remove('nav-scrolled');
-                    }
-                    ticking = false;
-                });
-                ticking = true;
+    const facultyModal = document.getElementById('faculty-modal');
+
+    if (facultyModal) {
+        const modalPhoto     = document.getElementById('faculty-modal-photo');
+        const modalName      = document.getElementById('faculty-modal-name');
+        const modalRole      = document.getElementById('faculty-modal-role');
+        const modalPortfolio = document.getElementById('faculty-modal-portfolio');
+        const modalBio       = document.getElementById('faculty-modal-bio');
+        const modalEmail     = document.getElementById('faculty-modal-email');
+        const modalEmailText = document.getElementById('faculty-modal-email-text');
+        const modalClose     = document.getElementById('faculty-modal-close');
+        const modalPrev      = document.getElementById('faculty-modal-prev');
+        const modalNext      = document.getElementById('faculty-modal-next');
+
+        const facultyTriggers = Array.from(document.querySelectorAll('[data-faculty-trigger]'));
+        const facultyList = facultyTriggers.map(el => ({
+            name: el.dataset.name || '',
+            role: el.dataset.role || '',
+            portfolio: el.dataset.portfolio || '',
+            bio: el.dataset.bio || '',
+            photo: el.dataset.photo || '',
+            email: el.dataset.email || '',
+        }));
+        let facultyIndex = 0;
+
+        function openFacultyModal(i) {
+            if (!facultyList.length) return;
+            facultyIndex = (i + facultyList.length) % facultyList.length;
+            const f = facultyList[facultyIndex];
+            if (modalPhoto) { modalPhoto.src = f.photo; modalPhoto.alt = f.name; }
+            if (modalName) modalName.textContent = f.name;
+            if (modalRole) modalRole.textContent = f.role;
+            if (modalPortfolio) modalPortfolio.textContent = f.portfolio;
+            if (modalBio) modalBio.textContent = f.bio;
+            if (modalEmail) {
+                if (f.email) {
+                    modalEmail.href = 'mailto:' + f.email;
+                    if (modalEmailText) modalEmailText.textContent = f.email;
+                    modalEmail.classList.remove('hidden');
+                    modalEmail.classList.add('inline-flex');
+                } else {
+                    modalEmail.classList.add('hidden');
+                    modalEmail.classList.remove('inline-flex');
+                }
             }
-        };
-        window.addEventListener('scroll', onScroll, { passive: true });
-        onScroll();
+
+            const showNav = facultyList.length > 1 ? '' : 'none';
+            if (modalPrev) modalPrev.style.display = showNav;
+            if (modalNext) modalNext.style.display = showNav;
+
+            facultyModal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFacultyModal() {
+            facultyModal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        facultyTriggers.forEach((el, i) => el.addEventListener('click', () => openFacultyModal(i)));
+
+        facultyModal.addEventListener('click', e => { if (e.target === facultyModal) closeFacultyModal(); });
+        modalClose?.addEventListener('click', closeFacultyModal);
+        modalPrev?.addEventListener('click', e => { e.stopPropagation(); openFacultyModal(facultyIndex - 1); });
+        modalNext?.addEventListener('click', e => { e.stopPropagation(); openFacultyModal(facultyIndex + 1); });
+        document.addEventListener('keydown', e => {
+            if (!facultyModal.classList.contains('open')) return;
+            if (e.key === 'Escape')     closeFacultyModal();
+            if (e.key === 'ArrowLeft')  openFacultyModal(facultyIndex - 1);
+            if (e.key === 'ArrowRight') openFacultyModal(facultyIndex + 1);
+        });
+    }
+
+    /* ════════════════════════════════════════════════════════
+       COURSE STRUCTURE MODAL
+    ════════════════════════════════════════════════════════ */
+    const courseModal = document.getElementById('course-modal');
+
+    if (courseModal) {
+        const courseModalTitle = document.getElementById('course-modal-title');
+        const courseModalTag   = document.getElementById('course-modal-tag');
+        const courseModalNote  = document.getElementById('course-modal-note');
+        const courseModalBody  = document.getElementById('course-modal-body');
+        const courseModalClose = document.getElementById('course-modal-close');
+
+        function openCourseModal(trigger) {
+            const code = trigger.dataset.courseTrigger;
+            const content = document.querySelector('[data-course-content="' + code + '"]');
+            if (!content) return;
+
+            if (courseModalTag) courseModalTag.textContent = trigger.dataset.courseTag || '';
+            if (courseModalTitle) courseModalTitle.textContent = trigger.dataset.courseTitle || '';
+            if (courseModalNote) {
+                const note = trigger.dataset.courseNote || '';
+                courseModalNote.textContent = note;
+                courseModalNote.classList.toggle('hidden', !note);
+            }
+            if (courseModalBody) courseModalBody.innerHTML = content.innerHTML;
+
+            courseModal.classList.add('open');
+            courseModal.scrollTop = 0;
+            if (courseModalBody) courseModalBody.scrollTop = 0;
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCourseModal() {
+            courseModal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('[data-course-trigger]').forEach(el => {
+            el.addEventListener('click', () => openCourseModal(el));
+        });
+
+        courseModal.addEventListener('click', e => { if (e.target === courseModal) closeCourseModal(); });
+        courseModalClose?.addEventListener('click', closeCourseModal);
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && courseModal.classList.contains('open')) closeCourseModal();
+        });
     }
 
     /* ════════════════════════════════════════════════════════

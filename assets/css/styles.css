@@ -1,6 +1,6 @@
 /* ── SCOTSA Platform Design System — Premium Edition ──────────
    Colors: Royal Blue #0A1F44  |  Gold #D4AF37  |  Ink #0F172A
-   Fonts: Sora (headings) · Plus Jakarta Sans (body)
+   Fonts: DM Sans (headings) · Lato (body) — matches wiuc-ghana.edu.gh
 ──────────────────────────────────────────────────────────── */
 
 /* ═══════════════════════════════════════════════════════════
@@ -149,7 +149,7 @@ body {
 }
 [data-theme="dark"] .card-hover:hover {
     border-color: rgba(212,175,55,.25) !important;
-    box-shadow: var(--shadow-lift) !important;
+    background-color: rgba(255,255,255,.02) !important;
 }
 [data-theme="dark"] .contact-card {
     background:   var(--bg-surface) !important;
@@ -261,13 +261,13 @@ body {
 html { scroll-behavior: smooth; }
 
 body {
-    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Lato', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Sora', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Page enter animation */
@@ -343,20 +343,54 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HERO — HOMEPAGE
+   HERO — HOMEPAGE CAROUSEL
+   Slides are stacked, absolutely-positioned background photos that
+   cross-fade via opacity (assets/js/main.js "HERO CAROUSEL" block);
+   the tint/vignette lives on a separate .hero-overlay layer on top of
+   the slides so it stays constant while photos rotate underneath it.
 ════════════════════════════════════════════════════════════ */
 .hero-grid {
-    /* Overridable per-page via an inline style="--hero-image:url(...)"
-       (see index.php, which reads the active photo from site_settings). */
-    --hero-image: url("../images/hero/hero-orientation-team.jpg");
+    /* Solid fallback so the navy look stays opaque before any slide has
+       loaded, or if no hero_slides rows exist yet. */
+    background-color: #0A1F44;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-slides {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    background-position: center;
+    background-size: cover;
+    opacity: 0;
+    transition: opacity 900ms ease;
+}
+.hero-slide.active {
+    opacity: 1;
+}
+
+.hero-bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
     background:
         linear-gradient(140deg, rgba(10,31,68,.62) 0%, rgba(7,23,47,.56) 50%, rgba(13,42,92,.50) 100%),
         radial-gradient(ellipse at 78% 10%, rgba(212,175,55,.28) 0%, transparent 52%),
-        radial-gradient(ellipse at 20% 80%, rgba(10,31,68,.45) 0%, transparent 50%),
-        var(--hero-image);
-    background-position: center;
-    background-size: cover;
-    position: relative;
+        radial-gradient(ellipse at 20% 80%, rgba(10,31,68,.45) 0%, transparent 50%);
 }
 
 /* Overlay is lighter now so the photo actually shows through; give the
@@ -367,85 +401,54 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     text-shadow: 0 2px 12px rgba(0,0,0,.55);
 }
 
-/* Animated gold orb */
-.hero-orb {
-    position: absolute;
-    width: 500px;
-    height: 500px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(212,175,55,.18) 0%, transparent 70%);
-    top: -10%;
-    right: -5%;
-    pointer-events: none;
-    animation: orbFloat 8s ease-in-out infinite;
+/* Dots + arrows */
+.hero-dots {
+    display: flex;
+    gap: 0.5rem;
 }
-@keyframes orbFloat {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50%       { transform: translateY(-20px) scale(1.04); }
+.hero-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.35);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 200ms var(--ease-out);
 }
-
-/* ═══════════════════════════════════════════════════════════
-   PAGE HERO — inner pages
-════════════════════════════════════════════════════════════ */
-.page-hero {
-    /* Overridable via inline style="--page-hero-image:url(...)" (see
-       includes/header.php, which reads the active photo from site_settings).
-       background-color is the fallback so the navy look stays solid/opaque
-       on any page where no photo has been set yet. */
-    --page-hero-image: none;
-    background-color: #0A1F44;
-    background-image:
-        linear-gradient(140deg, rgba(10,31,68,.80) 0%, rgba(7,23,47,.76) 50%, rgba(13,42,92,.72) 100%),
-        var(--page-hero-image);
-    /* Biased toward the top: these banners are much wider than they are
-       tall, so a dead-center crop tends to land on torsos/waists instead of
-       faces in portrait-oriented or standing-subject photos. */
-    background-position: center 25%;
-    background-size: cover;
-    position: relative;
-    overflow: hidden;
+.hero-dot:hover { background: rgba(255,255,255,.6); }
+.hero-dot.active {
+    width: 1.5rem;
+    background: #D4AF37;
 }
-.page-hero h1,
-.page-hero p,
-.page-hero .eyebrow {
-    text-shadow: 0 2px 10px rgba(0,0,0,.45);
+.hero-arrow {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.20);
+    color: white;
+    cursor: pointer;
+    transition: all 200ms var(--ease-out);
+    backdrop-filter: blur(4px);
 }
-.page-hero::before {
-    content: '';
-    position: absolute;
-    top: -40%; right: -15%;
-    width: 520px; height: 520px;
-    background: radial-gradient(circle, rgba(212,175,55,.20) 0%, transparent 65%);
-    pointer-events: none;
-    animation: orbFloat 10s ease-in-out infinite;
+.hero-arrow:hover {
+    background: rgba(255,255,255,.18);
+    border-color: rgba(212,175,55,.5);
 }
-.page-hero::after {
-    content: '';
-    position: absolute;
-    bottom: -50%; left: -10%;
-    width: 420px; height: 420px;
-    background: radial-gradient(circle, rgba(255,255,255,.04) 0%, transparent 65%);
-    pointer-events: none;
-}
-
-/* Dot grid for page heroes */
-.page-hero > * { position: relative; z-index: 1; }
 
 /* ═══════════════════════════════════════════════════════════
    CARDS
 ════════════════════════════════════════════════════════════ */
 .card-hover {
-    transition:
-        transform    240ms var(--ease-out),
-        box-shadow   240ms var(--ease-out),
-        border-color 240ms ease;
+    transition: border-color 240ms ease, background-color 240ms ease;
 }
 .card-hover:hover {
-    border-color: rgba(10,31,68,.20);
-    box-shadow: var(--shadow-lift);
-    transform: translateY(-5px);
+    border-color: rgba(10,31,68,.28);
+    background-color: rgba(10,31,68,.015);
 }
-.card-hover:active { transform: translateY(-2px); }
 
 /* ═══════════════════════════════════════════════════════════
    BUTTONS
@@ -457,26 +460,17 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-family: 'Sora', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 700;
     font-size: 0.875rem;
     justify-content: center;
     padding: 0.65rem 1.25rem;
-    transition:
-        background  150ms ease,
-        transform   150ms var(--ease-out),
-        box-shadow  150ms ease;
+    transition: background 150ms ease;
     white-space: nowrap;
     letter-spacing: 0.01em;
 }
 .btn-primary:hover {
     background: var(--royal-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(10,31,68,.35);
-}
-.btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 10px rgba(10,31,68,.25);
 }
 
 .btn-gold {
@@ -486,26 +480,17 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-family: 'Sora', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 800;
     font-size: 0.875rem;
     justify-content: center;
     padding: 0.65rem 1.25rem;
-    transition:
-        background  150ms ease,
-        transform   150ms var(--ease-out),
-        box-shadow  150ms ease;
+    transition: background 150ms ease;
     white-space: nowrap;
     letter-spacing: 0.01em;
 }
 .btn-gold:hover {
     background: var(--gold-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(212,175,55,.45);
-}
-.btn-gold:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 12px rgba(212,175,55,.30);
 }
 
 .btn-outline-white {
@@ -515,23 +500,18 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-family: 'Sora', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 700;
     font-size: 0.875rem;
     justify-content: center;
     padding: 0.65rem 1.25rem;
-    transition:
-        background     150ms ease,
-        border-color   150ms ease,
-        transform      150ms var(--ease-out);
+    transition: background 150ms ease, border-color 150ms ease;
     white-space: nowrap;
 }
 .btn-outline-white:hover {
     background: rgba(255,255,255,.13);
     border-color: rgba(255,255,255,.70);
-    transform: translateY(-1px);
 }
-.btn-outline-white:active { transform: translateY(0); }
 
 /* ═══════════════════════════════════════════════════════════
    FORMS
@@ -539,7 +519,7 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 .form-input {
     border: 1.5px solid rgb(226 232 240);
     border-radius: 0.65rem;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Lato', sans-serif;
     font-size: 0.875rem;
     padding: 0.65rem 0.9rem;
     width: 100%;
@@ -561,7 +541,7 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 .eyebrow {
     display: inline-block;
     color: var(--gold);
-    font-family: 'Sora', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.24em;
@@ -599,11 +579,6 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    transition: transform 220ms var(--ease-spring), box-shadow 220ms ease;
-}
-.contact-card:hover .social-icon {
-    transform: scale(1.08);
-    box-shadow: 0 8px 20px rgba(0,0,0,.18);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -660,12 +635,46 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     transform: scale(1);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   PROGRAMME CARDS
+════════════════════════════════════════════════════════════ */
+.prog-card {
+    position: relative;
+    overflow: hidden;
+}
+.prog-card::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 0;
+    background: linear-gradient(to right, #0A1F44, #D4AF37);
+    transition: width 320ms var(--ease-out);
+}
+.prog-card:hover::after,
+.prog-card:focus-visible::after {
+    width: 100%;
+}
+.prog-card.prog-card--postgrad::after {
+    background: linear-gradient(to right, #D4AF37, #0A1F44);
+}
+.prog-kicker {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #D4AF37;
+}
+[data-theme="dark"] .prog-card { background: #111827; border-color: rgba(255,255,255,.08); }
+
 /* filter tabs */
 .filter-tab {
     border: 1.5px solid rgb(226 232 240);
     border-radius: 2rem;
     padding: 0.48rem 1.15rem;
-    font-family: 'Sora', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     color: rgb(100 116 139);
@@ -721,6 +730,86 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 .lightbox.open img { transform: scale(1); }
 
 /* ═══════════════════════════════════════════════════════════
+   FACULTY BIO MODAL — reuses .lightbox's dim/blur backdrop and
+   open/close transition, swapping the single <img> for a photo +
+   text card (assets/js/main.js "FACULTY BIO MODAL" block).
+════════════════════════════════════════════════════════════ */
+.bio-modal-card {
+    display: flex;
+    flex-direction: column;
+    width: min(90vw, 780px);
+    max-height: 82vh;
+    overflow-y: auto;
+    border-radius: 1rem;
+    background: white;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6);
+    transform: scale(0.94);
+    transition: transform 320ms var(--ease-spring);
+}
+.lightbox.open .bio-modal-card { transform: scale(1); }
+.bio-modal-card img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    object-position: 50% 15%;
+    flex-shrink: 0;
+}
+.bio-modal-text {
+    padding: 1.75rem;
+}
+[data-theme="dark"] .bio-modal-card { background: #111827; }
+
+@media (min-width: 640px) {
+    .bio-modal-card { flex-direction: row; max-height: 70vh; }
+    .bio-modal-card img { width: 240px; height: auto; }
+    .bio-modal-text { flex: 1; overflow-y: auto; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COURSE STRUCTURE MODAL — reuses .lightbox's dim/blur backdrop;
+   wider/taller than the bio modal since it holds a full course
+   list per level (assets/js/main.js "COURSE STRUCTURE MODAL" block).
+════════════════════════════════════════════════════════════ */
+.course-modal-card {
+    display: flex;
+    flex-direction: column;
+    width: min(92vw, 860px);
+    max-height: 85vh;
+    border-radius: 1rem;
+    background: white;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6);
+    transform: scale(0.94);
+    transition: transform 320ms var(--ease-spring);
+    overflow: hidden;
+}
+.lightbox.open .course-modal-card { transform: scale(1); }
+.course-modal-header {
+    flex-shrink: 0;
+    padding: 1.75rem 1.75rem 1.25rem;
+    border-bottom: 1px solid rgb(226 232 240);
+}
+.course-modal-body {
+    padding: 1.5rem 1.75rem 1.75rem;
+    overflow-y: auto;
+}
+[data-theme="dark"] .course-modal-card { background: #111827; }
+[data-theme="dark"] .course-modal-header { border-color: rgba(255,255,255,.08); }
+
+/* Video modal — 16:9 frame, iframe injected on demand by main.js */
+.video-frame {
+    width: min(90vw, 960px);
+    aspect-ratio: 16 / 9;
+    border-radius: 0.875rem;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6);
+}
+.video-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
    CONTACT CARDS
 ════════════════════════════════════════════════════════════ */
 .contact-card {
@@ -733,17 +822,12 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     gap: 1rem;
     text-decoration: none;
     color: var(--ink);
-    transition:
-        transform    220ms var(--ease-out),
-        box-shadow   220ms var(--ease-out),
-        border-color 220ms ease;
+    transition: border-color 220ms ease, background-color 220ms ease;
 }
 .contact-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 48px rgba(10,31,68,.12);
-    border-color: rgba(10,31,68,.22);
+    border-color: rgba(10,31,68,.28);
+    background-color: rgba(10,31,68,.015);
 }
-.contact-card:active { transform: translateY(-1px); }
 
 /* ═══════════════════════════════════════════════════════════
    ADMIN SIDEBAR
@@ -752,7 +836,7 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     border-radius: 0.5rem;
     color: rgb(203 213 225);
     padding: 0.65rem 1rem;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Lato', sans-serif;
     font-size: 0.875rem;
     font-weight: 600;
     display: flex;
@@ -769,42 +853,6 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     background: rgba(212,175,55,.14);
     color: var(--gold);
     border-left: 2px solid var(--gold);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   SCROLL ANIMATIONS
-════════════════════════════════════════════════════════════ */
-.fade-in {
-    opacity: 0;
-    transform: translateY(24px);
-    transition:
-        opacity   660ms var(--ease-out),
-        transform 660ms var(--ease-out);
-}
-.fade-in.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Stagger delays */
-.fade-in-delay-1 { transition-delay: 80ms; }
-.fade-in-delay-2 { transition-delay: 160ms; }
-.fade-in-delay-3 { transition-delay: 240ms; }
-.fade-in-delay-4 { transition-delay: 320ms; }
-.fade-in-delay-5 { transition-delay: 400ms; }
-.fade-in-delay-6 { transition-delay: 480ms; }
-
-/* Slide from left */
-.fade-left {
-    opacity: 0;
-    transform: translateX(-24px);
-    transition:
-        opacity   660ms var(--ease-out),
-        transform 660ms var(--ease-out);
-}
-.fade-left.visible {
-    opacity: 1;
-    transform: translateX(0);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -834,7 +882,7 @@ img.lazy-fade.loaded { opacity: 1; }
     background: white;
     display: grid;
     place-items: center;
-    font-family: 'Sora', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 900;
     font-size: 1.1rem;
     color: var(--royal);
@@ -957,24 +1005,21 @@ img.lazy-fade.loaded { opacity: 1; }
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE TWEAKS
 ════════════════════════════════════════════════════════════ */
-@media (max-width: 640px) {
-    .hero-orb { width: 280px; height: 280px; }
-    .page-hero::before { width: 300px; height: 300px; }
-}
-
 @media (min-width: 1536px) {
     /* Ultra-wide: cap section max-width already at 7xl (80rem), fine */
-    .hero-grid { background-position: center 20%; }
+    .hero-slide { background-position: center 20%; }
 }
+
+/* Smooth-scrolls the section jump strip's anchor links to their target. */
+html { scroll-behavior: smooth; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
     *, *::before, *::after {
         animation-duration: .01ms !important;
         transition-duration: .01ms !important;
     }
-    .fade-in { opacity: 1; transform: none; }
-    .fade-left { opacity: 1; transform: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -987,7 +1032,7 @@ img.lazy-fade.loaded { opacity: 1; }
 /* ── Popup ──────────────────────────────────────────────── */
 .swal-scotsa-popup {
     border-radius: 1.375rem !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Lato', sans-serif !important;
     padding: 2rem !important;
     box-shadow:
         0 25px 60px rgba(10,31,68,.18),
@@ -998,7 +1043,7 @@ img.lazy-fade.loaded { opacity: 1; }
 
 /* ── Title ──────────────────────────────────────────────── */
 .swal-scotsa-title {
-    font-family: 'Sora', sans-serif !important;
+    font-family: 'DM Sans', sans-serif !important;
     font-weight: 900 !important;
     color: #0F172A !important;
     font-size: 1.2rem !important;
@@ -1021,7 +1066,7 @@ img.lazy-fade.loaded { opacity: 1; }
     border-radius: .625rem !important;
     font-weight: 700 !important;
     padding: .6rem 1.5rem !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Lato', sans-serif !important;
     font-size: .875rem !important;
     border: none !important;
     cursor: pointer !important;
@@ -1079,7 +1124,7 @@ img.lazy-fade.loaded { opacity: 1; }
 /* ── Toast ──────────────────────────────────────────────── */
 .swal-scotsa-toast {
     border-radius: 1rem !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Lato', sans-serif !important;
     font-weight: 600 !important;
     font-size: .875rem !important;
     box-shadow: 0 8px 30px rgba(10,31,68,.14), 0 2px 8px rgba(10,31,68,.08) !important;

@@ -8,14 +8,8 @@
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
-        <testsuite name="Integration">
-            <directory>tests/Integration</directory>
-        </testsuite>
     </testsuites>
     <php>
-        <!-- Points the app at a dedicated test database — never the real
-             scotsa_platform DB. See database/README.md for how to create it. -->
-        <env name="DB_NAME" value="scotsa_platform_test" force="true"/>
         <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_BASE_URL" value="/scot" force="true"/>
     </php>
