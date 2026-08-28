@@ -6,28 +6,6 @@ function e(?string $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
-/**
- * A password <input> with a built-in show/hide eye toggle (wired up by the
- * [data-password-toggle] handler in main.js). $id must be unique on the page.
- */
-function password_field(string $id, string $name, string $placeholder = '', string $autocomplete = 'current-password', bool $required = true, int $minlength = 0): string
-{
-    $attrs = $required ? ' required' : '';
-    $attrs .= $minlength > 0 ? ' minlength="' . $minlength . '"' : '';
-
-    $eyeOpen = str_replace('<svg ', '<svg data-eye-open ', icon('eye', 'h-4 w-4'));
-    $eyeShut = str_replace('<svg ', '<svg data-eye-closed ', icon('eye-slash', 'h-4 w-4 hidden'));
-
-    return '<div class="relative">'
-        . '<input id="' . e($id) . '" class="form-input pr-10" type="password" name="' . e($name) . '"'
-        . ($placeholder !== '' ? ' placeholder="' . e($placeholder) . '"' : '')
-        . ' autocomplete="' . e($autocomplete) . '"' . $attrs . '>'
-        . '<button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600" '
-        . 'data-password-toggle="' . e($id) . '" aria-label="Show password">'
-        . $eyeOpen . $eyeShut . '</button>'
-        . '</div>';
-}
-
 function csrf_token(): string
 {
     if (empty($_SESSION['csrf_token'])) {
@@ -71,49 +49,6 @@ function consume_flash(): array
 function client_ip(): string
 {
     return (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-}
-
-/**
- * Generic per-bucket sliding-window rate limit backed by the DB (works
- * across PHP-FPM workers without needing shared memory). Returns true
- * when the caller should be turned away. Fails open on DB errors so an
- * infra hiccup can't take the whole site down.
- */
-function rate_limit_hit(string $bucket, int $maxHits, int $windowSeconds): bool
-{
-    try {
-        $pdo = db();
-        $stmt = $pdo->prepare(
-            'SELECT COUNT(*) FROM rate_limit_hits WHERE bucket = ? AND hit_at >= (NOW() - INTERVAL ? SECOND)'
-        );
-        $stmt->execute([$bucket, $windowSeconds]);
-        if ((int) $stmt->fetchColumn() >= $maxHits) {
-            return true;
-        }
-        $pdo->prepare('INSERT INTO rate_limit_hits (bucket) VALUES (?)')->execute([$bucket]);
-        if (random_int(1, 200) === 1) {
-            $pdo->exec('DELETE FROM rate_limit_hits WHERE hit_at < (NOW() - INTERVAL 1 HOUR)');
-        }
-        return false;
-    } catch (Throwable $e) {
-        error_log('[SCOTSA RateLimit] check failed: ' . $e->getMessage());
-        return false;
-    }
-}
-
-/**
- * Record an admin action for accountability. Best-effort: a logging
- * failure must never block the action it's describing.
- */
-function audit_log(string $action, string $entityType, ?int $entityId, ?string $detail = null): void
-{
-    try {
-        db()->prepare(
-            'INSERT INTO audit_log (admin_id, action, entity_type, entity_id, detail, ip_address) VALUES (?, ?, ?, ?, ?, ?)'
-        )->execute([$_SESSION['admin_id'] ?? null, $action, $entityType, $entityId, $detail, client_ip()]);
-    } catch (Throwable $e) {
-        error_log('[SCOTSA Audit] failed to record "' . $action . ' ' . $entityType . '": ' . $e->getMessage());
-    }
 }
 
 /**

@@ -82,7 +82,7 @@ function avatar_url(?string $avatarPath, string $name): string
 
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
         . '<rect width="100" height="100" rx="50" fill="#0A1F44"/>'
-        . '<text x="50" y="52" font-family="Sora, sans-serif" font-size="38" font-weight="800" '
+        . '<text x="50" y="52" font-family="DM Sans, sans-serif" font-size="38" font-weight="800" '
         . 'fill="#D4AF37" text-anchor="middle" dominant-baseline="middle">' . $initials . '</text>'
         . '</svg>';
 
