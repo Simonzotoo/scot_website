@@ -10,6 +10,22 @@
 # Uploads
 uploads/
 
+# Raw source uploads — already processed into assets/images and
+# assets/videos with proper names/compression; these are the original
+# unprocessed staging files and aren't referenced by the site.
+labimages/
+blogsimages/
+3dprinter and Meta Quest 3 virtual reality headset /
+
+# Unconverted HEIC originals — the .jpg versions actually used on the
+# site already exist alongside these; HEIC doesn't render in most
+# browsers anyway.
+assets/images/gallery/*.heic
+
+# Raw pre-transcode video originals — the processed/compressed versions
+# actually used on the site already exist alongside these.
+assets/videos/_originals/
+
 # User profile photos (real people's data, regenerated at runtime)
 assets/images/avatars/
 

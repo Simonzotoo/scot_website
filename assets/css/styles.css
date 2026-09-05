@@ -440,6 +440,24 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 }
 
 /* ═══════════════════════════════════════════════════════════
+   SECTION TINT — alternates with plain white down the page so it
+   doesn't read as one unbroken white sheet. Full-bleed background;
+   the section's own inner wrapper keeps content at max-w-7xl.
+════════════════════════════════════════════════════════════ */
+.section-tint {
+    background-color: #E7ECF6;
+}
+[data-theme="dark"] .section-tint {
+    background-color: #131C33;
+}
+.section-plain {
+    background-color: #ffffff;
+}
+[data-theme="dark"] .section-plain {
+    background-color: #0b1120;
+}
+
+/* ═══════════════════════════════════════════════════════════
    CARDS
 ════════════════════════════════════════════════════════════ */
 .card-hover {
@@ -512,6 +530,13 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     background: rgba(255,255,255,.13);
     border-color: rgba(255,255,255,.70);
 }
+/* .btn-outline-white's own display:inline-flex otherwise beats Tailwind's
+   .hidden (same specificity, this file loads after tailwind.css) — needed
+   for #hero-watch-btn, which starts hidden and is only shown by JS when
+   the active hero slide has an associated video. */
+.btn-outline-white.hidden {
+    display: none;
+}
 
 /* ═══════════════════════════════════════════════════════════
    FORMS
@@ -542,9 +567,9 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     display: inline-block;
     color: var(--gold);
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.68rem;
+    font-size: 1rem;
     font-weight: 800;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
 
@@ -582,27 +607,32 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   GALLERY
+   GALLERY — uniform grid; source photos are a genuine mix of
+   portrait and landscape shots, so every tile is a fixed 4:3 box
+   with object-fit:cover cropping each photo to fit, rather than a
+   masonry layout that would keep uneven tile heights.
 ════════════════════════════════════════════════════════════ */
 .gallery-grid {
-    columns: 3;
-    column-gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
 }
-@media (max-width: 1024px) { .gallery-grid { columns: 2; } }
-@media (max-width: 580px)  { .gallery-grid { columns: 1; } }
+@media (max-width: 1024px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px)  { .gallery-grid { grid-template-columns: 1fr; } }
 
 .gallery-item {
-    break-inside: avoid;
-    margin-bottom: 1rem;
     position: relative;
     cursor: zoom-in;
     border-radius: 0.875rem;
     overflow: hidden;
     isolation: isolate;
+    aspect-ratio: 4 / 3;
 }
 .gallery-item img {
     width: 100%;
+    height: 100%;
     display: block;
+    object-fit: cover;
     transition: transform 380ms var(--ease-out);
     will-change: transform;
 }
@@ -619,6 +649,32 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     padding: 1.25rem;
 }
 .gallery-item:hover .gallery-overlay { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════
+   FACILITIES — bento grid of lab photos; shares .gallery-overlay /
+   .gallery-expand for the hover caption + expand icon, and the
+   gallery lightbox (data-gallery-lightbox) for the click-to-enlarge
+   viewer, so the only new styling needed is the tile itself.
+════════════════════════════════════════════════════════════ */
+.facility-tile {
+    position: relative;
+    cursor: zoom-in;
+    border-radius: 1rem;
+    overflow: hidden;
+    isolation: isolate;
+    height: 100%;
+}
+.facility-tile img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 380ms var(--ease-out);
+    will-change: transform;
+}
+.facility-tile:hover img { transform: scale(1.06); }
+.facility-tile:hover .gallery-overlay { opacity: 1; }
+.facility-tile:hover .gallery-expand { opacity: 1; transform: scale(1); }
 
 /* Expand icon in gallery */
 .gallery-expand {
@@ -730,40 +786,126 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 .lightbox.open img { transform: scale(1); }
 
 /* ═══════════════════════════════════════════════════════════
-   FACULTY BIO MODAL — reuses .lightbox's dim/blur backdrop and
-   open/close transition, swapping the single <img> for a photo +
-   text card (assets/js/main.js "FACULTY BIO MODAL" block).
+   FACULTY PROFILE PAGE — a full-viewport takeover (not a small
+   modal), opened from a faculty card, tab-switching handled by
+   assets/js/main.js "FACULTY PROFILE PAGE" block.
 ════════════════════════════════════════════════════════════ */
-.bio-modal-card {
+#faculty-page {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: white;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 280ms ease, visibility 280ms ease;
+}
+#faculty-page.open {
+    opacity: 1;
+    visibility: visible;
+}
+[data-theme="dark"] #faculty-page { background: #0b1120; }
+
+.faculty-page-inner {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 5rem;
+}
+@media (min-width: 640px) {
+    .faculty-page-inner { padding: 2rem 2rem 6rem; }
+}
+
+.faculty-page-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+.faculty-page-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1.5px solid rgb(226 232 240);
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: rgb(71 85 105);
+    transition: all 200ms var(--ease-out);
+}
+.faculty-page-back:hover {
+    border-color: var(--royal);
+    color: var(--royal);
+    background: rgba(10,31,68,.04);
+}
+[data-theme="dark"] .faculty-page-back { border-color: rgba(255,255,255,.15); color: rgb(203 213 225); }
+[data-theme="dark"] .faculty-page-back:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,.08); }
+
+.faculty-page-nav-btn {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 1.5px solid rgb(226 232 240);
+    color: rgb(100 116 139);
+    transition: all 200ms var(--ease-out);
+}
+.faculty-page-nav-btn:hover { border-color: var(--royal); color: var(--royal); }
+[data-theme="dark"] .faculty-page-nav-btn { border-color: rgba(255,255,255,.15); color: rgb(148 163 184); }
+
+.faculty-page-header {
     display: flex;
     flex-direction: column;
-    width: min(90vw, 780px);
-    max-height: 82vh;
-    overflow-y: auto;
-    border-radius: 1rem;
-    background: white;
-    box-shadow: 0 40px 80px rgba(0,0,0,.6);
-    transform: scale(0.94);
-    transition: transform 320ms var(--ease-spring);
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
-.lightbox.open .bio-modal-card { transform: scale(1); }
-.bio-modal-card img {
-    width: 100%;
-    height: 260px;
+.faculty-page-header img {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 1.25rem;
     object-fit: cover;
     object-position: 50% 15%;
     flex-shrink: 0;
+    box-shadow: 0 20px 48px rgba(10,31,68,.18);
 }
-.bio-modal-text {
-    padding: 1.75rem;
-}
-[data-theme="dark"] .bio-modal-card { background: #111827; }
-
 @media (min-width: 640px) {
-    .bio-modal-card { flex-direction: row; max-height: 70vh; }
-    .bio-modal-card img { width: 240px; height: auto; }
-    .bio-modal-text { flex: 1; overflow-y: auto; }
+    .faculty-page-header { flex-direction: row; align-items: center; }
+    .faculty-page-header img { width: 9.5rem; height: 9.5rem; }
 }
+
+.faculty-page-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    border-bottom: 1.5px solid rgb(226 232 240);
+    margin-bottom: 2rem;
+}
+[data-theme="dark"] .faculty-page-tabs { border-color: rgba(255,255,255,.10); }
+.faculty-tab-btn {
+    flex-shrink: 0;
+    padding: 0.75rem 0.25rem;
+    margin-right: 1.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: rgb(148 163 184);
+    border-bottom: 2px solid transparent;
+    transition: color 200ms ease, border-color 200ms ease;
+    white-space: nowrap;
+}
+.faculty-tab-btn:hover { color: var(--royal); }
+.faculty-tab-btn.active {
+    color: var(--royal);
+    border-bottom-color: var(--gold);
+}
+[data-theme="dark"] .faculty-tab-btn.active { color: var(--gold); }
+[data-theme="dark"] .faculty-tab-btn:hover { color: var(--gold); }
+
+.faculty-tab-panel { display: none; }
+.faculty-tab-panel.active { display: block; }
 
 /* ═══════════════════════════════════════════════════════════
    COURSE STRUCTURE MODAL — reuses .lightbox's dim/blur backdrop;

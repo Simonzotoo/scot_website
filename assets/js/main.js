@@ -286,78 +286,102 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ════════════════════════════════════════════════════════
-       FACULTY BIO MODAL
+       FACULTY PROFILE PAGE — full-viewport takeover, not a modal.
+       Header fields are simple text swaps; the five tab panels are
+       populated by copying each matching hidden [data-faculty-content]
+       block's panels into the shared panel containers on open.
     ════════════════════════════════════════════════════════ */
-    const facultyModal = document.getElementById('faculty-modal');
+    const facultyPage = document.getElementById('faculty-page');
 
-    if (facultyModal) {
-        const modalPhoto     = document.getElementById('faculty-modal-photo');
-        const modalName      = document.getElementById('faculty-modal-name');
-        const modalRole      = document.getElementById('faculty-modal-role');
-        const modalPortfolio = document.getElementById('faculty-modal-portfolio');
-        const modalBio       = document.getElementById('faculty-modal-bio');
-        const modalEmail     = document.getElementById('faculty-modal-email');
-        const modalEmailText = document.getElementById('faculty-modal-email-text');
-        const modalClose     = document.getElementById('faculty-modal-close');
-        const modalPrev      = document.getElementById('faculty-modal-prev');
-        const modalNext      = document.getElementById('faculty-modal-next');
+    if (facultyPage) {
+        const pagePhoto     = document.getElementById('faculty-page-photo');
+        const pageName      = document.getElementById('faculty-page-name');
+        const pageRole      = document.getElementById('faculty-page-role');
+        const pagePortfolio = document.getElementById('faculty-page-portfolio');
+        const pageEmail     = document.getElementById('faculty-page-email');
+        const pageEmailText = document.getElementById('faculty-page-email-text');
+        const pageClose     = document.getElementById('faculty-page-close');
+        const pagePrev      = document.getElementById('faculty-page-prev');
+        const pageNext      = document.getElementById('faculty-page-next');
+        const tabButtons    = Array.from(document.querySelectorAll('[data-faculty-tab]'));
+        const panels        = {
+            overview:     document.getElementById('faculty-page-panel-overview'),
+            courses:      document.getElementById('faculty-page-panel-courses'),
+            research:     document.getElementById('faculty-page-panel-research'),
+            publications: document.getElementById('faculty-page-panel-publications'),
+            education:    document.getElementById('faculty-page-panel-education'),
+        };
 
         const facultyTriggers = Array.from(document.querySelectorAll('[data-faculty-trigger]'));
         const facultyList = facultyTriggers.map(el => ({
+            id: el.dataset.facultyTrigger,
             name: el.dataset.name || '',
             role: el.dataset.role || '',
             portfolio: el.dataset.portfolio || '',
-            bio: el.dataset.bio || '',
             photo: el.dataset.photo || '',
             email: el.dataset.email || '',
         }));
         let facultyIndex = 0;
 
-        function openFacultyModal(i) {
+        function setFacultyTab(tabName) {
+            tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.facultyTab === tabName));
+            Object.keys(panels).forEach(key => panels[key]?.classList.toggle('active', key === tabName));
+        }
+
+        function openFacultyPage(i) {
             if (!facultyList.length) return;
             facultyIndex = (i + facultyList.length) % facultyList.length;
             const f = facultyList[facultyIndex];
-            if (modalPhoto) { modalPhoto.src = f.photo; modalPhoto.alt = f.name; }
-            if (modalName) modalName.textContent = f.name;
-            if (modalRole) modalRole.textContent = f.role;
-            if (modalPortfolio) modalPortfolio.textContent = f.portfolio;
-            if (modalBio) modalBio.textContent = f.bio;
-            if (modalEmail) {
+
+            if (pagePhoto) { pagePhoto.src = f.photo; pagePhoto.alt = f.name; }
+            if (pageName) pageName.textContent = f.name;
+            if (pageRole) pageRole.textContent = f.role;
+            if (pagePortfolio) pagePortfolio.textContent = f.portfolio;
+            if (pageEmail) {
                 if (f.email) {
-                    modalEmail.href = 'mailto:' + f.email;
-                    if (modalEmailText) modalEmailText.textContent = f.email;
-                    modalEmail.classList.remove('hidden');
-                    modalEmail.classList.add('inline-flex');
+                    pageEmail.href = 'mailto:' + f.email;
+                    if (pageEmailText) pageEmailText.textContent = f.email;
+                    pageEmail.classList.remove('hidden');
+                    pageEmail.classList.add('inline-flex');
                 } else {
-                    modalEmail.classList.add('hidden');
-                    modalEmail.classList.remove('inline-flex');
+                    pageEmail.classList.add('hidden');
+                    pageEmail.classList.remove('inline-flex');
                 }
             }
 
-            const showNav = facultyList.length > 1 ? '' : 'none';
-            if (modalPrev) modalPrev.style.display = showNav;
-            if (modalNext) modalNext.style.display = showNav;
+            const source = document.querySelector('[data-faculty-content="' + f.id + '"]');
+            if (source) {
+                Object.keys(panels).forEach(key => {
+                    const sourcePanel = source.querySelector('[data-panel="' + key + '"]');
+                    if (panels[key] && sourcePanel) panels[key].innerHTML = sourcePanel.innerHTML;
+                });
+            }
+            setFacultyTab('overview');
 
-            facultyModal.classList.add('open');
+            const showNav = facultyList.length > 1 ? '' : 'none';
+            if (pagePrev) pagePrev.style.display = showNav;
+            if (pageNext) pageNext.style.display = showNav;
+
+            facultyPage.classList.add('open');
+            facultyPage.scrollTop = 0;
             document.body.style.overflow = 'hidden';
         }
 
-        function closeFacultyModal() {
-            facultyModal.classList.remove('open');
+        function closeFacultyPage() {
+            facultyPage.classList.remove('open');
             document.body.style.overflow = '';
         }
 
-        facultyTriggers.forEach((el, i) => el.addEventListener('click', () => openFacultyModal(i)));
+        facultyTriggers.forEach((el, i) => el.addEventListener('click', () => openFacultyPage(i)));
 
-        facultyModal.addEventListener('click', e => { if (e.target === facultyModal) closeFacultyModal(); });
-        modalClose?.addEventListener('click', closeFacultyModal);
-        modalPrev?.addEventListener('click', e => { e.stopPropagation(); openFacultyModal(facultyIndex - 1); });
-        modalNext?.addEventListener('click', e => { e.stopPropagation(); openFacultyModal(facultyIndex + 1); });
+        tabButtons.forEach(btn => btn.addEventListener('click', () => setFacultyTab(btn.dataset.facultyTab)));
+
+        pageClose?.addEventListener('click', closeFacultyPage);
+        pagePrev?.addEventListener('click', () => openFacultyPage(facultyIndex - 1));
+        pageNext?.addEventListener('click', () => openFacultyPage(facultyIndex + 1));
         document.addEventListener('keydown', e => {
-            if (!facultyModal.classList.contains('open')) return;
-            if (e.key === 'Escape')     closeFacultyModal();
-            if (e.key === 'ArrowLeft')  openFacultyModal(facultyIndex - 1);
-            if (e.key === 'ArrowRight') openFacultyModal(facultyIndex + 1);
+            if (!facultyPage.classList.contains('open')) return;
+            if (e.key === 'Escape') closeFacultyPage();
         });
     }
 
@@ -408,6 +432,48 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Escape' && courseModal.classList.contains('open')) closeCourseModal();
         });
     }
+
+    /* ════════════════════════════════════════════════════════
+       PROGRAMME FILTERS (by degree tag: BSc / Diploma / MSc)
+    ════════════════════════════════════════════════════════ */
+    const programmeFilterTabs  = document.querySelectorAll('[data-programme-filter]');
+    const programmeFilterItems = document.querySelectorAll('[data-programme-category]');
+    const programmeGroups      = document.querySelectorAll('[data-programme-group]');
+
+    function updateProgrammeGroupVisibility() {
+        programmeGroups.forEach(group => {
+            const anyVisible = Array.from(group.querySelectorAll('[data-programme-category]'))
+                .some(item => item.style.display !== 'none');
+            group.style.display = anyVisible ? '' : 'none';
+        });
+    }
+
+    programmeFilterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            programmeFilterTabs.forEach(t => t.classList.remove('filter-active'));
+            tab.classList.add('filter-active');
+            const filter = tab.dataset.programmeFilter;
+
+            programmeFilterItems.forEach(item => {
+                const show = filter === 'All' || item.dataset.programmeCategory === filter;
+                if (show) {
+                    item.style.display = 'block';
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.96)';
+                    requestAnimationFrame(() => {
+                        item.style.transition = 'opacity 280ms ease, transform 280ms ease';
+                        item.style.opacity = '1';
+                        item.style.transform = 'scale(1)';
+                    });
+                } else {
+                    item.style.opacity = '0';
+                    setTimeout(() => { item.style.display = 'none'; updateProgrammeGroupVisibility(); }, 180);
+                }
+            });
+
+            updateProgrammeGroupVisibility();
+        });
+    });
 
     /* ════════════════════════════════════════════════════════
        LAZY-LOAD IMAGE FADE

@@ -49,10 +49,10 @@ $pageTitle = $pageTitle ?? APP_NAME;
                 <span class="block font-heading font-black text-scotsaBlue dark:text-white
                              tracking-[-0.015em] transition-colors duration-200
                              group-hover:text-scotsaLight dark:group-hover:text-scotsaGold"
-                      style="font-size:1.3rem; line-height:1;">SCOT</span>
-                <span class="hidden sm:block font-semibold uppercase text-slate-500 dark:text-slate-400
-                             transition-colors duration-200 mt-[5px] whitespace-nowrap"
-                      style="font-size:.63rem; letter-spacing:.065em; line-height:1.2;">
+                      style="font-size:1.85rem; line-height:1;">SCOT</span>
+                <span class="hidden sm:block font-heading font-black uppercase text-scotsaBlue dark:text-slate-200
+                             transition-colors duration-200 mt-[6px] whitespace-nowrap"
+                      style="font-size:.78rem; letter-spacing:.05em; line-height:1.2;">
                     School of Computing &amp; Technology
                 </span>
             </div>
