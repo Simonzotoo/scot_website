@@ -1,308 +1,202 @@
 <?php
-$pageTitle = 'School of Computing and Technology (SCOT), WIUC Ghana';
+require_once __DIR__ . '/includes/db.php';
 
 /**
- * All department content is hardcoded here rather than admin-managed — this
- * is a single static showcase page, not a CMS. Update these arrays directly
- * when programmes, faculty, or hero photos change.
+ * Every piece of department content below is now pulled from MySQL via
+ * the admin dashboard (see admin/), not hardcoded. Each block reshapes
+ * DB rows into the exact same associative-array shape the template
+ * further down the file already expects — nothing below this point
+ * changes as a result of this cutover.
  */
-$heroSlides = [
-    [
-        'bgVideo'  => 'videos/campus-tour.mp4',
-        'photo'    => 'hero/hero-orientation-team.jpg', // used as the <video> poster and as a no-JS/no-video fallback
-        'headline' => 'The School of Computing and Technology.',
-        'subtext'  => 'Educating the next generation of computing, IT, and cybersecurity professionals at Wisconsin International University College (WIUC), Accra.',
-    ],
-    [
-        'photo'    => 'hero/IMG_4625.JPEG',
-        'headline' => 'Undergraduate, Diploma & Postgraduate programmes.',
-        'subtext'  => 'From foundational diplomas to postgraduate degrees in cybersecurity, business computing, and IT.',
-    ],
-];
+$pdo = db();
+
+$siteSettings = $pdo->query('SELECT setting_key, setting_value FROM site_settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+$setting = static fn (string $key, string $default = '') => $siteSettings[$key] ?? $default;
+
+$pageTitle = $setting('site_meta_title', 'School of Computing and Technology (SCOT), WIUC Ghana');
+
+$heroSlides = array_map(static function (array $r): array {
+    $slide = [
+        'photo'    => $r['photo_path'],
+        'headline' => $r['headline'],
+        'subtext'  => $r['subtext'],
+    ];
+    if (!empty($r['photo_position'])) {
+        $slide['photoPosition'] = $r['photo_position'];
+    }
+    return $slide;
+}, $pdo->query("SELECT * FROM hero_slides WHERE status='active' ORDER BY sort_order")->fetchAll());
 
 /**
- * Course structures below are transcribed from WIUC's published regular
- * semester timetable (2025/2026, 1st semester) — real course codes/titles
- * per level and semester, parsed directly from the timetable's own group
- * tables (one table per "[level][L/U]-[code]" group, matched by its own
- * <caption>), not invented and not limited to whatever a quick skim caught.
- * Levels/semesters with no group table in the timetable are simply omitted
- * rather than guessed — e.g. BSc AI & Robotics is genuinely Level 100 only
- * (newest programme), and diplomas stop at Level 200 by design. Postgraduate
- * programmes run on a separate schedule not covered by that timetable, so
- * they carry no 'courses' key and their cards are not clickable.
+ * Programmes + course structures. 'undergraduate' holds BSc and Diploma
+ * rows together (the template itself filters by tag when it needs one or
+ * the other) to match how the two groups render from one array; 'courses'
+ * is keyed by level ('100'..'400') with 'lower'/'upper' semester lists of
+ * [code,title] pairs for BSc/Diploma, or by 'core'/'elective' plain-title
+ * lists for MSc. Short Courses carry no 'courses' key at all.
  */
-$programmes = [
-    'undergraduate' => [
-        [
-            'tag' => 'BSc', 'name' => 'Information Technology',
-            'desc' => 'Systems, networking, software tools, and applied computing for real-world IT roles.',
-            'code' => 'BSCIT',
-            'courses' => [
-                '100' => [
-                    'lower' => [['WGS105','Introduction to Sociology'],['WGS113','French I'],['WGS127','Communication Skills I'],['WIT105','Fundamentals of ICT'],['WIT211','Principles of Programming'],['WMT103','Algebra & Matrices']],
-                    'upper' => [['ITW104','Discrete Mathematics'],['WGS108','Principles of Psychology'],['WGS114','French II'],['WGS128','Communication Skills II'],['WIT205','Programming in C++'],['WMT107','Logic and Critical Thinking']],
-                ],
-                '200' => [
-                    'lower' => [['ITW201','Data Structures and Algorithms'],['ITW218','Calculus'],['ITW307','Computer Architecture & Organization'],['ITW310','Multimedia Applications'],['WIT301','Management Information Systems'],['WIT310','Systems Analysis and Design']],
-                    'upper' => [['ITW202','Probability and Statistics'],['ITW204','Intro to Software Engineering'],['ITW207','Modern Operating Systems'],['ITW210','Database Management Systems I'],['ITW301','Web Technologies'],['ITW303','Data Communications and Networks'],['ITW406','Professional Ethics and Legal Issues']],
-                ],
-                '300' => [
-                    'lower' => [['ITW205','Website Programming'],['ITW208','IT Service Management'],['ITW305','Advance Database Management System'],['ITW311','Numerical Methods'],['ITW315','Cloud Computing'],['ITW316','Data Communication & Networks II'],['ITW408','Human Computer Interaction'],['WIT311','Object-Oriented Programming (Visual Basic)']],
-                    'upper' => [['ITW304','Wireless and Mobile Computing'],['ITW322','Advanced Website Programming'],['ITW325','Information Systems Research Methods'],['ITW405','E-Business and E-Commerce'],['WIT214','Programming in Java'],['WMT318','Data Analysis']],
-                ],
-                '400' => [
-                    'lower' => [['ITW308','Distributed Systems'],['ITW312','Systems Administration'],['ITW322','Advanced Website Programming'],['ITW407','Information Systems Security Management'],['ITW409','Embedded Systems'],['WBC301','Mobile Application Development']],
-                    'upper' => [['ITW403','Artificial Intelligence'],['ITW413','Project Management'],['ITW416','Data Mining'],['ITW422','Advanced Mobile Application Development'],['WBS304','Operations Management'],['WBS332','Fundamentals of Entrepreneurship']],
-                ],
-            ],
-        ],
-        [
-            'tag' => 'BSc', 'name' => 'Computing and Actuarial Science',
-            'desc' => 'Combines computing fundamentals with actuarial mathematics and statistics for careers in insurance, finance, and risk analysis.',
-            'code' => 'BSCCAS',
-            'courses' => [
-                '100' => [
-                    'lower' => [['WCA101','Introductory Mathematical Methods'],['WCA103','Statistics'],['WCA105','Computer Systems'],['WGS113','French I'],['WGS127','Communication Skills I'],['WIT105','Fundamentals of ICT']],
-                    'upper' => [['WCA102','Mathematics of Finance and Investment I'],['WCA104','Probability Theory and Distribution'],['WGS114','French II'],['WGS128','Communication Skills II'],['WIT150','Intro to Network & the Internet'],['WMT107','Logic and Critical Thinking']],
-                ],
-                '200' => [
-                    'lower' => [['ITW207','Modern Operating Systems'],['WCA205','Mathematics of Finance and Investment II'],['WIT211','Principles of Programming']],
-                    'upper' => [['ITW210','Database Management Systems I'],['WBS202','Financial Accounting II'],['WCA202','Sampling Techniques and Survey Methods'],['WCA206','Modelling with Spreadsheet'],['WES210','Principles of Macroeconomics'],['WIT205','Programming in C++']],
-                ],
-                '300' => [
-                    'lower' => [['ITW304','Wireless and Mobile Computing'],['ITW305','Advance Database Management System'],['ITW315','Cloud Computing'],['WBF407','Corporate Finance'],['WCA309','Life Contingencies'],['WIT214','Programming in Java']],
-                    'upper' => [['ITW204','Intro to Software Engineering'],['ITW205','Website Programming'],['WBS308','Research Methods'],['WCA308','Social Security and Pensions Administration'],['WCA314','Life Insurance'],['WIT301','Management Information Systems']],
-                ],
-                '400' => [
-                    'lower' => [['ITW312','Systems Administration'],['ITW416','Data Mining'],['WBC301','Mobile Application Development'],['WCA411','Non-Life Insurance'],['WCA413','Health Insurance']],
-                    'upper' => [['ITW404','Operation Research and Optimization'],['ITW406','Professional Ethics and Legal Issues'],['WBS332','Fundamentals of Entrepreneurship'],['WCA410','Risk Management'],['WCA412','Statistical Inference']],
-                ],
-            ],
-        ],
-        [
-            'tag' => 'BSc', 'name' => 'Cybersecurity',
-            'desc' => 'Security operations, digital forensics, network defence, and risk management.',
-            'code' => 'BSCCS',
-            'note' => 'Course structure currently published through Level 300 Lower Semester.',
-            'courses' => [
-                '100' => [
-                    'lower' => [['WCB101','Introduction to Cybersecurity'],['WCB103','Computer Hardware and Software'],['WGS113','French I'],['WGS127','Communication Skills I'],['WIT211','Principles of Programming'],['WMT103','Algebra & Matrices'],['WMT107','Logic and Critical Thinking']],
-                    'upper' => [['ITW205','Website Programming'],['ITW218','Calculus'],['WBS201','Financial Accounting I'],['WCB104','Networking Fundamentals'],['WCB106','Digital Systems and Logic Design'],['WGS128','Communication Skills II'],['WIT102','Programming with Python']],
-                ],
-                '200' => [
-                    'lower' => [['ITW104','Discrete Mathematics'],['ITW210','Database Management Systems I'],['ITW303','Data Communications and Networks'],['ITW307','Computer Architecture & Organization'],['WCB201','Intro to Secure Systems Design'],['WCB207','Intro to Penetration Testing'],['WIT214','Programming in Java']],
-                    'upper' => [['ITW201','Data Structures and Algorithms'],['ITW204','Intro to Software Engineering'],['ITW207','Modern Operating Systems'],['ITW305','Advance Database Management System'],['ITW407','Information Systems Security Management'],['WCB212','Number Theory']],
-                ],
-                '300' => [
-                    'lower' => [['ITW325','Information Systems Research Methods'],['WCB212','Number Theory'],['WCB301','Web Application Security'],['WCB303','Operating System Security'],['WCB305','Cryptography'],['WCB307','Cyber Law & Ethics'],['WCB309','Differential Equation'],['WCB311','Intro to IoT Security and Challenges']],
-                    'upper' => [],
-                ],
-            ],
-        ],
-        [
-            'tag' => 'BSc', 'name' => 'Artificial Intelligence and Robotics',
-            'desc' => 'Machine learning, intelligent systems, and robotics engineering at the frontier of computing.',
-            'code' => 'BSCAIR',
-            'note' => 'The newest programme in the department — currently running Level 100 only.',
-            'courses' => [
-                '100' => [
-                    'lower' => [['WCB103','Computer Hardware and Software'],['WGS113','French I'],['WGS127','Communication Skills I'],['WIAR111','Introduction to Structured Programming'],['WIAR123','Introduction to Artificial Intelligence'],['WIAR127','Introduction to Robotics'],['WIAR167','Introduction to Electronics and Circuits'],['WMT103','Algebra & Matrices']],
-                    'upper' => [],
-                ],
-            ],
-        ],
-        [
-            'tag' => 'BSc', 'name' => 'Management with Information Technology',
-            'desc' => 'Blends business management with IT skills for technology-driven organisational leadership.',
-            'code' => 'BMIT',
-            'note' => 'Course structure currently published through Level 200 Lower Semester.',
-            'courses' => [
-                '100' => [
-                    'lower' => [['WBC101','Fundamentals of Management Science'],['WBS217','Introduction to Business Management'],['WGS105','Introduction to Sociology'],['WGS113','French I'],['WGS127','Communication Skills I'],['WIT105','Fundamentals of ICT']],
-                    'upper' => [['WBC101','Fundamentals of Management Science'],['WGS108','Principles of Psychology'],['WGS114','French II'],['WGS128','Communication Skills II'],['WIT211','Principles of Programming'],['WIT301','Management Information Systems'],['WMT107','Logic and Critical Thinking']],
-                ],
-                '200' => [
-                    'lower' => [['ITW210','Database Management Systems I'],['ITW303','Data Communications and Networks'],['WBS201','Financial Accounting I'],['WIT214','Programming in Java'],['WIT310','Systems Analysis and Design'],['WMT215','Quantitative Methods I']],
-                    'upper' => [],
-                ],
-            ],
-        ],
-        [
-            'tag' => 'Diploma', 'name' => 'Information Technology',
-            'desc' => 'A foundational two-year diploma in practical information technology skills.',
-            'code' => 'DIPIT',
-            'courses' => [
-                '100' => [
-                    'lower' => [['ITW307','Computer Architecture & Organization'],['WBS201','Financial Accounting I'],['WGS127','Communication Skills I'],['WIT105','Fundamentals of ICT'],['WIT211','Principles of Programming'],['WMT103','Algebra & Matrices']],
-                    'upper' => [['ITW104','Discrete Mathematics'],['ITW310','Multimedia Applications'],['WBS217','Introduction to Business Management'],['WGS128','Communication Skills II'],['WIT150','Intro to Network & the Internet'],['WIT205','Programming in C++']],
-                ],
-                '200' => [
-                    'lower' => [['DIT205','Website Design & Development'],['ITW201','Data Structures and Algorithms'],['ITW207','Modern Operating Systems'],['WIT301','Management Information Systems'],['WIT310','Systems Analysis and Design']],
-                    'upper' => [['DIT208','Computer Graphics'],['ITW210','Database Management Systems I'],['ITW303','Data Communications and Networks']],
-                ],
-            ],
-        ],
-    ],
-    'postgraduate' => [
-        [
-            'tag' => 'MSc', 'name' => 'Cybersecurity and Digital Forensics',
-            'desc' => 'Develops critical skills to analyse and solve cyber security problems, covering the legal, ethical, and technical dimensions of designing and securing modern IT systems.',
-            'code' => 'MSCCSDF',
-            'courses' => [
-                'core' => ['Research Methods and Professional Practice','Operating Systems Theory and Applications','Interactive Programming with Python','Cyber Security and Forensics','Computer Networking Theory, Technologies & Protocols','Data Structures and Complexities of Algorithms','Artificial Intelligence and Machine Learning','Computer Networks and Systems Security','Seminar'],
-                'elective' => ['Data Recovery and Digital Forensics Analysis','Ethical Hacking and Penetration Testing','Cryptography Theory and Applications','Information Security','Cyber Intelligence Analysis and Modelling','Mobile Systems Forensics'],
-            ],
-        ],
-        [
-            'tag' => 'MSc', 'name' => 'Business Computing',
-            'desc' => 'Combines computing expertise with business strategy, equipping graduates to design, evaluate, and implement IT-driven solutions across modern organisations.',
-            'code' => 'MSCBC',
-            'courses' => [
-                'core' => ['Research Methods and Professional Practice','Business Information Systems','Programming for Business Applications','Database Management Systems','Management Information Systems','Data Analytics for Business','Enterprise Systems and Digital Transformation','Project Management for Computing','Seminar'],
-                'elective' => ['Business Intelligence and Decision Support Systems','E-Commerce and Digital Business','Information Systems Strategy and Governance','Software Engineering for Business Applications','Human-Computer Interaction','Cloud Computing for Business'],
-            ],
-        ],
-        [
-            'tag' => 'MSc', 'name' => 'Information Technology',
-            'desc' => 'Advanced knowledge across web technologies, mobile computing, machine learning, data management, cybersecurity, and cloud computing, paired with real-world problem-solving practice.',
-            'code' => 'MSCIT',
-            'courses' => [
-                'core' => ['Research Methods and Professional Practice','Advanced Programming Concepts with Java','Computer Networking Theory, Technologies & Protocols','Artificial Intelligence and Machine Learning','Operating Systems Theory and Applications','Advanced Computer Networks','Management Information Systems','Data Structures and Complexities of Algorithms','Seminar'],
-                'elective' => ['Advanced Database Management Systems','Computer Systems & Architecture','Ethical Hacking, Data Recovery and Penetration Testing','Cyber Security & Forensics','Multimedia Systems and Image Processing','Advanced Software and Engineering'],
-            ],
-        ],
-    ],
-];
+function scot_load_programmes(PDO $pdo): array
+{
+    $out = ['undergraduate' => [], 'postgraduate' => [], 'certificate' => []];
+
+    $progRows = $pdo->query("SELECT * FROM programs ORDER BY FIELD(tag,'BSc','Diploma','MSc','Short Courses'), sort_order")->fetchAll();
+    $courseStmt = $pdo->prepare('SELECT * FROM courses WHERE program_id = ? ORDER BY sort_order');
+    $levelNames = [1 => '100', 2 => '200', 3 => '300', 4 => '400'];
+    $semNames = [1 => 'lower', 2 => 'upper'];
+
+    foreach ($progRows as $p) {
+        if ($p['tag'] === 'Short Courses') {
+            $out['certificate'][] = ['tag' => 'Short Courses', 'name' => $p['name']];
+            continue;
+        }
+
+        $entry = [
+            'tag'  => $p['tag'],
+            'name' => $p['name'],
+            'desc' => $p['description'],
+            'code' => strtoupper($p['slug']),
+        ];
+        if (!empty($p['note'])) {
+            $entry['note'] = $p['note'];
+        }
+
+        $courseStmt->execute([$p['id']]);
+        $rows = $courseStmt->fetchAll();
+
+        if ($p['tag'] === 'MSc') {
+            $courses = ['core' => [], 'elective' => []];
+            foreach ($rows as $c) {
+                if (isset($courses[$c['group_label']])) {
+                    $courses[$c['group_label']][] = $c['title'];
+                }
+            }
+            $entry['courses'] = $courses;
+            $out['postgraduate'][] = $entry;
+        } else {
+            $courses = [];
+            foreach ($rows as $c) {
+                $levelKey = $levelNames[(int) $c['level_id']] ?? null;
+                $semKey = $semNames[(int) $c['semester_id']] ?? null;
+                if ($levelKey === null || $semKey === null) {
+                    continue;
+                }
+                $courses[$levelKey][$semKey][] = [$c['code'], $c['title']];
+            }
+            // Ensure every level present in the data has both semester
+            // keys defined (even if empty), matching the original
+            // hand-written arrays the template was built against.
+            foreach ($courses as $levelKey => &$sems) {
+                $sems += ['lower' => [], 'upper' => []];
+            }
+            unset($sems);
+            $entry['courses'] = $courses;
+            $out['undergraduate'][] = $entry;
+        }
+    }
+
+    return $out;
+}
+$programmes = scot_load_programmes($pdo);
 
 /**
- * Faculty tiers. Real photos are used where available (dean, HOD Business
- * Computing); everywhere else a vacant/"Awaiting Appointment" placeholder is
- * shown, following the same convention as the rest of the site.
+ * Faculty. 'leadership' roster = Dean + Heads (rendered together on the
+ * public page); 'faculty' roster = Lecturers. Each member's three list
+ * tabs (courses taught / publications / education) come from their own
+ * child tables; research_interest is a single column.
  */
-$dean = [
-    'role'      => 'Dean',
-    'name'      => 'Dr. Patrick Kudjo',
-    'portfolio' => 'School of Computing and Technology',
-    'bio'       => 'Dr. Patrick Kudjo leads the School of Computing and Technology at Wisconsin International University College, overseeing academic direction, faculty, and departmental strategy across all computing programmes.',
-    'photo'     => 'faculty/dean-patrick-kudjo.png',
-    'email'     => null,
-];
+function scot_load_faculty_member(PDO $pdo, array $r): array
+{
+    $fetch = static function (string $table) use ($pdo, $r): array {
+        $stmt = $pdo->prepare("SELECT text_value FROM `$table` WHERE member_id = ? ORDER BY sort_order");
+        $stmt->execute([$r['id']]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    };
 
-$heads = [
-    [
-        'role'      => 'Head of Department, Business Computing',
-        'name'      => 'Charles A. Babbage Jnr.',
-        'portfolio' => 'Educator, Researcher & AI Specialist',
-        'bio'       => "Charles Jnr. Asiedu, widely known as Babbage, is a seasoned educator and researcher with a distinguished background in Information Technology and Artificial Intelligence.\n\nHe earned his Bachelor of Science in Information Technology from Wisconsin International University College, graduating as the Valedictorian of his class. He subsequently completed his national service at the University of Ghana Business School, contributing to the Operations and Management Information Systems Department.\n\nCharles holds a research-based Master's degree in Engineering from Huzhou University, China, awarded through a competitive merit-based Chinese scholarship for academic excellence. His specialization in Intelligent Information Processing Technology advanced his work in artificial intelligence, culminating in his research thesis titled \"Sentiment Analysis on Twitter Data: A Performance Gap Between Deep Learning and Traditional Machine Learning Algorithms.\"\n\nThroughout his career, he has contributed to curriculum development for CTVET institutions, consulted for various organizations, and published research in respected journals.\n\nHis research interests focus on Artificial Intelligence, Machine Learning applications, and their intersection with Healthcare and Education.",
-        'photo'     => 'faculty/hod-charles-babbage-asiedu.jpg',
-        'email'     => 'charles.asiedu@wiuc-ghana.edu.gh',
-    ],
-    [
-        'role'      => 'Head of Department, Information Technology',
-        'name'      => 'Dr. Richard Amankwah',
-        'portfolio' => 'Information Technology',
-        'bio'       => 'Dr. Richard Amankwah heads the Information Technology unit at the School of Computing and Technology, overseeing the BSc Information Technology and Diploma in Information Technology programmes.',
-        'photo'     => 'faculty/hod-richard-amankwah.jpg',
-        'email'     => null,
-    ],
-];
+    return [
+        'role'              => $r['role'],
+        'name'              => $r['name'],
+        'portfolio'         => $r['portfolio'],
+        'bio'               => $r['bio'],
+        'photo'             => $r['photo_path'],
+        'email'             => $r['email'],
+        'courses_taught'    => $fetch('faculty_courses_taught'),
+        'research_interest' => $r['research_interest'],
+        'publications'      => $fetch('faculty_publications'),
+        'education'         => $fetch('faculty_education'),
+    ];
+}
 
-$lecturers = [
-    [
-        'role'      => 'Head, IT Support Department',
-        'name'      => 'Mr. Edwin Agbah',
-        'portfolio' => 'Network Engineer & IT Infrastructure Lead',
-        'bio'       => "Mr. Edwin Agbah serves as Head of the IT Support Department and oversees institutional networking and server infrastructure management.\n\nWith extensive Cisco-based networking training, he manages routing, switching, infrastructure security, and enterprise system reliability across campus environments.\n\nHe bridges academic instruction with enterprise-grade systems administration, ensuring high availability and operational continuity.",
-        'photo'     => 'faculty/edwin-agbah.jpg',
-        'email'     => 'edwin.agbah@wiuc-ghana.edu.gh',
-    ],
-    [
-        'role'      => 'Lecturer, Cloud Computing',
-        'name'      => 'Dr. Ian Asare',
-        'portfolio' => 'Cloud Architecture Specialist',
-        'bio'       => "Dr. Ian Asare is a lecturer at the School of Computing and Technology, specialising in cloud architecture and distributed systems.\n\nHis teaching and research interests centre on cloud infrastructure design, scalable systems, and the deployment models used by modern enterprise platforms.\n\nHe works closely with students on hands on projects that translate cloud computing theory into practical architecture, helping them build the skills needed for cloud engineering roles after graduation.",
-        'photo'     => 'faculty/dr-ian-asare.jpg',
-        'email'     => null,
-    ],
-    [
-        'role'      => 'Lecturer, Information Systems',
-        'name'      => 'Dr. Mateko Okantey',
-        'portfolio' => 'Systems Analysis, E-Commerce & E-Business',
-        'bio'       => "Dr. Mateko Okantey is a lecturer at the School of Computing and Technology, specialising in systems analysis, e-commerce, and e-business.\n\nHer work focuses on how organisations design, analyse, and implement information systems that support online commerce and digital business operations.\n\nShe guides students through the full systems development lifecycle, from requirements gathering and analysis to designing e-business solutions that meet real organisational needs.",
-        'photo'     => 'faculty/dr-mateko-okantey.jpg',
-        'email'     => null,
-    ],
-]; // Add more lecturers directly in this array as names/photos become available.
+$leadershipRows = $pdo->query("SELECT * FROM team_members WHERE roster='leadership' ORDER BY sort_order")->fetchAll();
+$dean = null;
+$heads = [];
+foreach ($leadershipRows as $i => $r) {
+    $member = scot_load_faculty_member($pdo, $r);
+    if ($i === 0) {
+        $dean = $member;
+    } else {
+        $heads[] = $member;
+    }
+}
+$lecturers = array_map(
+    static fn (array $r) => scot_load_faculty_member($pdo, $r),
+    $pdo->query("SELECT * FROM team_members WHERE roster='faculty' ORDER BY sort_order")->fetchAll()
+);
 
-$galleryPhotos = [
-    // Events
-    ['photo' => 'gallery/IMG_4617.JPEG', 'caption' => 'SCOTSA Annual General Assembly',   'category' => 'Events'],
-    ['photo' => 'gallery/IMG_4620.JPEG', 'caption' => 'Department Welcome Ceremony',      'category' => 'Events'],
-    ['photo' => 'gallery/IMG_4625.JPEG', 'caption' => 'SRC Week Opening Ceremony',        'category' => 'Events'],
-    ['photo' => 'gallery/IMG_4637.JPEG', 'caption' => 'SCOTSA Community Gathering',       'category' => 'Events'],
-    ['photo' => 'gallery/IMG_4742.JPEG', 'caption' => 'End-of-Semester Celebration',      'category' => 'Events'],
-    ['photo' => 'gallery/IMG_4849.JPEG', 'caption' => 'SRC Week Cultural Showcase',       'category' => 'Events'],
+$galleryPhotos = array_map(static fn (array $r) => [
+    'photo'    => $r['photo_path'],
+    'caption'  => $r['caption'],
+    'category' => $r['category'],
+], $pdo->query("SELECT * FROM gallery_items WHERE status='active' ORDER BY sort_order")->fetchAll());
 
-    // Seminars
-    ['photo' => 'gallery/IMG_4833.JPEG', 'caption' => 'Academic Awareness Seminar', 'category' => 'Seminars'],
-    ['photo' => 'gallery/IMG_4845.JPEG', 'caption' => 'Department Workshop',        'category' => 'Seminars'],
+$galleryCategories = array_merge(
+    ['All'],
+    $pdo->query('SELECT name FROM gallery_categories ORDER BY sort_order')->fetchAll(PDO::FETCH_COLUMN)
+);
 
-    // Tech Exhibitions
-    ['photo' => 'gallery/IMG_4632.JPEG', 'caption' => 'Technology Exhibition 2024', 'category' => 'Tech Exhibitions'],
+$videos = array_map(static fn (array $r) => [
+    'file'    => $r['file_path'],
+    'poster'  => $r['poster_path'],
+    'title'   => $r['title'],
+    'caption' => $r['caption'],
+], $pdo->query("SELECT * FROM videos WHERE status='active' ORDER BY sort_order")->fetchAll());
 
-    // Orientation
-    ['photo' => 'gallery/Orientation_12.JPEG', 'caption' => 'Student Engaged During Orientation',        'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_46.JPEG', 'caption' => 'Connect, Create, Collaborate Campaign',     'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_47.JPEG', 'caption' => 'Faculty Member Addressing Students',        'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_48.JPEG', 'caption' => 'Open Floor Discussion at Orientation',      'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_50.JPEG', 'caption' => 'Student Sharing Remarks at Orientation',    'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_51.JPEG', 'caption' => 'Executive Member Addressing New Students',  'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_52.JPEG', 'caption' => 'SCOTSA Executives Engaging Students',       'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_63.JPEG', 'caption' => 'Student Addressing the Orientation Audience','category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_64.JPEG', 'caption' => 'SCOTSA Executive Speaking at Orientation',  'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_65.JPEG', 'caption' => 'Facilitator Leading a Training Session',    'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_68.JPEG', 'caption' => 'Connect, Create, Collaborate Campaign',     'category' => 'Orientation'],
-    ['photo' => 'gallery/Orientation_71.JPEG', 'caption' => 'SCOTSA Orientation Group Photo',            'category' => 'Orientation'],
-    ['photo' => 'gallery/IMG_7216.jpg', 'caption' => 'SCOTSA Team at the Orientation Session', 'category' => 'Orientation'],
-    ['photo' => 'gallery/IMG_7218.jpg', 'caption' => 'SCOTSA Team at the Orientation Session', 'category' => 'Orientation'],
-    ['photo' => 'gallery/IMG_7219.jpg', 'caption' => 'SCOTSA Team at the Orientation Session', 'category' => 'Orientation'],
-    ['photo' => 'gallery/IMG_7220.jpg', 'caption' => 'SCOTSA Team at the Orientation Session', 'category' => 'Orientation'],
-    ['photo' => 'gallery/IMG_7221.jpg', 'caption' => 'SCOTSA Team at the Orientation Session', 'category' => 'Orientation'],
-    ['photo' => 'gallery/IMG_7222.jpg', 'caption' => 'SCOTSA Team at the Orientation Session', 'category' => 'Orientation'],
-    ['photo' => 'gallery/DR.IAN ASARE.JPEG',      'caption' => 'Dr. Ian Asare at Orientation',      'category' => 'Orientation'],
-    ['photo' => 'gallery/DR.MATEKO OKANTEY.JPEG', 'caption' => 'Dr. Mateko Okantey at Orientation', 'category' => 'Orientation'],
-];
-$galleryCategories = ['All', 'Events', 'Seminars', 'Tech Exhibitions', 'Orientation'];
+$blogPosts = array_map(static function (array $r) use ($pdo): array {
+    $photoStmt = $pdo->prepare('SELECT photo_path AS photo, caption, featured FROM blog_post_photos WHERE post_id = ? ORDER BY sort_order');
+    $photoStmt->execute([$r['id']]);
+    $photos = array_map(static function (array $p): array {
+        $photo = ['photo' => $p['photo'], 'caption' => $p['caption']];
+        if ($p['featured']) {
+            $photo['featured'] = true;
+        }
+        return $photo;
+    }, $photoStmt->fetchAll());
 
-$videos = [
-    [
-        'file'    => 'videos/campus-tour.mp4',
-        'poster'  => 'video-posters/campus-tour.jpg',
-        'title'   => 'Campus Tour',
-        'caption' => 'An aerial look at the WIUC campus, home to the School of Computing and Technology.',
-    ],
-    [
-        'file'    => 'videos/computer-lab-tour.mp4',
-        'poster'  => 'video-posters/computer-lab-tour.jpg',
-        'title'   => 'Inside the Computer Lab',
-        'caption' => 'A look inside one of the department\'s computer labs during a session.',
-    ],
-];
+    return [
+        'title'   => $r['title'],
+        'date'    => $r['post_date'],
+        'excerpt' => $r['excerpt'],
+        'photos'  => $photos,
+        'video'   => $r['video_path'],
+        'poster'  => $r['poster_path'],
+    ];
+}, $pdo->query("SELECT * FROM blog_posts WHERE status='published' ORDER BY sort_order")->fetchAll());
 
-$studentProjects = [
-    [
-        'title'      => 'Smart IoT-Based LPG Leakage Detection System',
-        'student'    => 'Simon Zotoo',
-        'programme'  => 'Final Year Project, BSc Information Technology',
-        'supervisor'   => 'Mr Charles A. Babbage Jnr',
-        'coSupervisor' => 'Mr. Nathaniel Mills',
-        'video'      => 'videos/gas-leak-detection-system.mp4',
-        'poster'     => 'video-posters/gas-leak-detection-system.jpg',
-        'summary'    => "LPG replaced firewood in most Ghanaian kitchens in the 1990s, but most households still rely on smell alone to catch a leak. This project builds a low-cost early-warning system around that gap: an ESP32 microcontroller reads MQ-6 and MQ-2 gas sensors every two seconds, firing a local buzzer, red LED, and LCD warning the instant a leak crosses threshold. At the same time, readings are pushed to a Firebase Realtime Database and surfaced live in a Flutter mobile app; if Wi-Fi is down, a SIM800L GSM module sends an SMS straight to a pre-registered number instead.\n\nIn testing, the local alarm responded within the two-second polling interval, cloud updates arrived within seconds, and SMS delivery took roughly ten to twelve seconds. The system was built to be replicated cheaply in an ordinary Ghanaian household.",
-        'stack'      => ['ESP32', 'MQ-6 & MQ-2 Sensors', 'SIM800L GSM', 'Firebase Realtime DB', 'Flutter'],
-    ],
-];
+$studentProjects = array_map(static function (array $r) use ($pdo): array {
+    $stackStmt = $pdo->prepare('SELECT tech_text FROM student_project_stack WHERE project_id = ? ORDER BY sort_order');
+    $stackStmt->execute([$r['id']]);
+
+    return [
+        'title'        => $r['title'],
+        'student'      => $r['student_name'],
+        'programme'    => $r['programme_label'],
+        'supervisor'   => $r['supervisor'],
+        'coSupervisor' => $r['co_supervisor'],
+        'video'        => $r['video_path'],
+        'poster'       => $r['poster_path'],
+        'summary'      => $r['summary'],
+        'stack'        => $stackStmt->fetchAll(PDO::FETCH_COLUMN),
+    ];
+}, $pdo->query("SELECT * FROM student_projects WHERE status='active' ORDER BY sort_order")->fetchAll());
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -316,7 +210,7 @@ require_once __DIR__ . '/includes/header.php';
         <?php foreach ($heroSlides as $i => $slide): ?>
         <div class="hero-slide <?= $i === 0 ? 'active' : '' ?>"
              data-slide
-             <?= empty($slide['bgVideo']) ? 'style="background-image:url(\'' . e(IMAGES_URL . '/' . $slide['photo']) . '\')"' : '' ?>
+             <?= empty($slide['bgVideo']) ? 'style="background-image:url(\'' . e(IMAGES_URL . '/' . $slide['photo']) . '\');' . (!empty($slide['photoPosition']) ? 'background-position:' . e($slide['photoPosition']) . ';' : '') . '"' : '' ?>
              data-headline="<?= e($slide['headline']) ?>"
              data-subtext="<?= e($slide['subtext']) ?>"
              data-video="">
@@ -374,12 +268,12 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<!-- Video modal: iframe is only inserted once a viewer taps "Watch" -->
+<!-- Video modal for a hero slide's optional "Watch" trigger -->
 <div id="video-modal" class="lightbox" role="dialog" aria-modal="true" aria-label="Video">
     <button id="video-modal-close"
             class="absolute top-5 right-5 grid h-10 w-10 place-items-center rounded-xl text-white/60 hover:text-white transition z-10"
             style="background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.20);"
-            aria-label="Close video">
+            aria-label="Close">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -390,13 +284,15 @@ require_once __DIR__ . '/includes/header.php';
 <!-- One-time section jump strip — replaces a persistent nav bar, since this
      page has no sticky header of its own (see includes/header.php). -->
 <nav aria-label="Jump to section" class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-8">
-    <div class="flex flex-wrap items-center justify-center gap-2 fade-in">
+    <div class="mb-8 flex flex-wrap gap-2 fade-in rounded-full bg-white/90 dark:bg-[#0b1120]/90 backdrop-blur-md shadow-lg border border-white/60 dark:border-white/10 px-3 py-2.5">
         <?php foreach ([
             ['About',      '#about'],
             ['Programmes', '#programmes'],
+            ['Facilities', '#facilities'],
             ['Watch',      '#watch'],
             ['Faculty',    '#faculty'],
             ['Projects',   '#projects'],
+            ['Blog',       '#blog'],
             ['Gallery',    '#gallery'],
             ['Contact',    '#contact'],
         ] as [$label, $href]): ?>
@@ -408,7 +304,8 @@ require_once __DIR__ . '/includes/header.php';
 <!-- ═══════════════════════════════════════════════════════════
      A MESSAGE FROM THE DEAN
 ════════════════════════════════════════════════════════════ -->
-<section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+<section class="section-plain py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] items-center">
         <div class="fade-in">
             <div class="relative rounded-2xl overflow-hidden shadow-2xl" style="aspect-ratio:4/5;">
@@ -420,13 +317,10 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <div class="fade-in fade-in-delay-2">
-            <span class="eyebrow">A Message From the Dean</span>
+            <span class="eyebrow" style="font-size:1.125rem; letter-spacing:.08em;">A Message From the Dean</span>
             <div class="gold-line mt-3 mb-6"></div>
             <blockquote class="text-lg sm:text-xl leading-9 text-ink font-medium">
-                &ldquo;Welcome to the School of Computing and Technology. Whether you are just beginning
-                your studies or advancing toward a postgraduate degree, our goal is the same: to equip
-                you with the knowledge, skills, and confidence to lead in an increasingly digital world.
-                Our faculty are committed to your success, both in the classroom and beyond it.&rdquo;
+                &ldquo;<?= e($setting('dean_message')) ?>&rdquo;
             </blockquote>
             <div class="mt-7 flex items-center gap-4">
                 <div class="w-10 h-px" style="background:#D4AF37;"></div>
@@ -437,14 +331,14 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
     </div>
+    </div>
 </section>
-
-<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
 
 <!-- ═══════════════════════════════════════════════════════════
      ABOUT THE DEPARTMENT
 ════════════════════════════════════════════════════════════ -->
-<section id="about" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 scroll-mt-20">
+<section id="about" class="section-tint py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] items-center">
         <div class="fade-in">
             <span class="eyebrow">About the Department</span>
@@ -453,14 +347,10 @@ require_once __DIR__ . '/includes/header.php';
                 The School of<br>Computing and Technology.
             </h2>
             <p class="mt-5 text-slate-500 leading-8 text-sm">
-                SCOT is the academic department at Wisconsin International University College (WIUC),
-                Accra, responsible for undergraduate, diploma, and postgraduate programmes in computing,
-                information technology, cybersecurity, and artificial intelligence. Our faculty combine
-                industry experience with academic rigour to prepare graduates for real careers in technology.
+                <?= e($setting('about_paragraph_1')) ?>
             </p>
             <p class="mt-4 text-slate-500 leading-8 text-sm">
-                SCOTSA, the department's student association, runs academic resources, events, and
-                community programmes that support every student's journey through SCOT.
+                <?= e($setting('about_paragraph_2')) ?>
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
                 <a class="btn-primary" href="#programmes">View Programmes</a>
@@ -470,25 +360,25 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="grid gap-4 sm:grid-cols-1 lg:gap-3 fade-in fade-in-delay-2">
             <?php foreach ([
-                ['Academic Excellence', 'Undergraduate, diploma, and postgraduate programmes across computing, IT, cybersecurity, and AI.'],
-                ['Experienced Faculty', 'Lecturers and department leadership combining academic depth with industry experience.'],
-                ['Built to Grow',       'A department expanding its programmes, research, and student services year over year.'],
+                [$setting('about_feature_1_title'), $setting('about_feature_1_body')],
+                [$setting('about_feature_2_title'), $setting('about_feature_2_body')],
+                [$setting('about_feature_3_title'), $setting('about_feature_3_body')],
             ] as [$title, $body]): ?>
             <div class="card-hover rounded-xl border border-slate-200 bg-white p-5 border-l-4 border-l-scotsaBlue">
-                <h3 class="font-heading font-bold text-scotsaBlue"><?= $title ?></h3>
-                <p class="mt-1.5 text-sm leading-6 text-slate-500"><?= $body ?></p>
+                <h3 class="font-heading font-bold text-scotsaBlue"><?= e($title) ?></h3>
+                <p class="mt-1.5 text-sm leading-6 text-slate-500"><?= e($body) ?></p>
             </div>
             <?php endforeach; ?>
         </div>
     </div>
+    </div>
 </section>
-
-<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
 
 <!-- ═══════════════════════════════════════════════════════════
      PROGRAMMES
 ════════════════════════════════════════════════════════════ -->
-<section id="programmes" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 scroll-mt-20">
+<section id="programmes" class="section-plain py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12 fade-in">
         <span class="eyebrow">What We Offer</span>
         <div class="gold-line mt-3 mx-auto mb-4"></div>
@@ -499,19 +389,40 @@ require_once __DIR__ . '/includes/header.php';
         </p>
     </div>
 
-    <!-- Undergraduate & Diploma -->
-    <h3 class="font-heading font-black text-sm uppercase tracking-wide text-slate-400 mb-5 fade-in">Undergraduate &amp; Diploma</h3>
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-14">
-        <?php foreach ($programmes['undergraduate'] as $i => $prog): ?>
+    <div class="mb-8 flex flex-wrap gap-2 fade-in">
+        <?php foreach (['All', 'BSc', 'MSc', 'Diploma', 'Short Courses'] as $i => $filterTag): ?>
+        <button type="button" class="filter-tab flex-shrink-0 <?= $i === 0 ? 'filter-active' : '' ?>" data-programme-filter="<?= e($filterTag) ?>"><?= e($filterTag) ?></button>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Undergraduate (BSc) — a bento grid: BSc IT (the only programme
+         with a complete Level 100-400 curriculum published) gets a wider
+         featured tile; grid-auto-flow:dense packs the rest around it with
+         no gaps. -->
+    <div data-programme-group>
+    <h3 class="font-heading font-black text-sm uppercase tracking-wide text-slate-400 mb-5 fade-in">Undergraduate</h3>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-14" style="grid-auto-flow:dense;">
+        <?php
+        $bscProgrammes = array_values(array_filter($programmes['undergraduate'], fn($p) => $p['tag'] === 'BSc'));
+        foreach ($bscProgrammes as $i => $prog):
+            $isFeatured = $i === 0;
+        ?>
         <button type="button"
-                class="prog-card rounded-xl border border-slate-200 bg-white p-6 text-left w-full fade-in fade-in-delay-<?= ($i % 3) + 1 ?>"
+                class="prog-card rounded-xl border border-slate-200 bg-white p-6 text-left w-full fade-in fade-in-delay-<?= ($i % 3) + 1 ?> <?= $isFeatured ? 'sm:col-span-2 lg:row-span-2' : '' ?>"
                 data-course-trigger="<?= e($prog['code']) ?>"
                 data-course-title="<?= e($prog['tag'] . ' ' . $prog['name']) ?>"
                 data-course-tag="<?= e($prog['tag']) ?>"
-                data-course-note="<?= e($prog['note'] ?? '') ?>">
+                data-course-note="<?= e($prog['note'] ?? '') ?>"
+                data-programme-category="<?= e($prog['tag']) ?>">
             <span class="prog-kicker"><?= e($prog['tag']) ?></span>
-            <h4 class="font-heading font-bold text-ink leading-snug mt-2"><?= e($prog['name']) ?></h4>
+            <h4 class="font-heading font-bold text-ink leading-snug mt-2 <?= $isFeatured ? 'text-xl' : '' ?>"><?= e($prog['name']) ?></h4>
             <p class="mt-2 text-sm leading-6 text-slate-500"><?= e($prog['desc']) ?></p>
+            <?php if ($isFeatured): ?>
+            <div class="mt-5 pt-5 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-500">
+                <?= icon('academic-cap', 'h-4 w-4 text-scotsaBlue') ?>
+                Complete curriculum published — Level 100 through Level 400
+            </div>
+            <?php endif; ?>
             <span class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-scotsaBlue">
                 View Course Structure
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -526,7 +437,7 @@ require_once __DIR__ . '/includes/header.php';
             <div class="mb-7">
                 <h5 class="font-heading font-black text-ink text-sm uppercase tracking-wide mb-3">Level <?= e($level) ?></h5>
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <?php foreach (['lower' => 'Lower Semester', 'upper' => 'Upper Semester'] as $sem => $semLabel): ?>
+                    <?php foreach (['lower' => 'First Semester', 'upper' => 'Second Semester'] as $sem => $semLabel): ?>
                     <div>
                         <p class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2"><?= $semLabel ?></p>
                         <?php if ($sems[$sem]): ?>
@@ -546,7 +457,9 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <?php endforeach; ?>
     </div>
+    </div>
 
+    <div data-programme-group>
     <!-- Postgraduate -->
     <h3 class="font-heading font-black text-sm uppercase tracking-wide text-slate-400 mb-5 fade-in">Postgraduate</h3>
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -556,7 +469,8 @@ require_once __DIR__ . '/includes/header.php';
                 data-course-trigger="<?= e($prog['code']) ?>"
                 data-course-title="<?= e($prog['tag'] . ' ' . $prog['name']) ?>"
                 data-course-tag="<?= e($prog['tag']) ?>"
-                data-course-note="">
+                data-course-note=""
+                data-programme-category="<?= e($prog['tag']) ?>">
             <span class="prog-kicker"><?= e($prog['tag']) ?></span>
             <h4 class="font-heading font-bold text-ink leading-snug mt-2"><?= e($prog['name']) ?></h4>
             <p class="mt-2 text-sm leading-6 text-slate-500"><?= e($prog['desc']) ?></p>
@@ -583,6 +497,77 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <?php endforeach; ?>
     </div>
+    </div>
+
+    <div data-programme-group>
+    <!-- Diploma -->
+    <h3 class="font-heading font-black text-sm uppercase tracking-wide text-slate-400 mb-5 fade-in">Diploma</h3>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <?php
+        $diplomaProgrammes = array_values(array_filter($programmes['undergraduate'], fn($p) => $p['tag'] === 'Diploma'));
+        foreach ($diplomaProgrammes as $i => $prog):
+        ?>
+        <button type="button"
+                class="prog-card rounded-xl border border-slate-200 bg-white p-6 text-left w-full fade-in fade-in-delay-<?= ($i % 3) + 1 ?>"
+                data-course-trigger="<?= e($prog['code']) ?>"
+                data-course-title="<?= e($prog['tag'] . ' ' . $prog['name']) ?>"
+                data-course-tag="<?= e($prog['tag']) ?>"
+                data-course-note="<?= e($prog['note'] ?? '') ?>"
+                data-programme-category="<?= e($prog['tag']) ?>">
+            <span class="prog-kicker"><?= e($prog['tag']) ?></span>
+            <h4 class="font-heading font-bold text-ink leading-snug mt-2"><?= e($prog['name']) ?></h4>
+            <p class="mt-2 text-sm leading-6 text-slate-500"><?= e($prog['desc']) ?></p>
+            <span class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-scotsaBlue">
+                View Course Structure
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </span>
+        </button>
+
+        <!-- Hidden course-structure content, pulled into #course-modal-body on click -->
+        <div class="course-structure-content hidden" data-course-content="<?= e($prog['code']) ?>">
+            <?php foreach ($prog['courses'] as $level => $sems): ?>
+            <div class="mb-7">
+                <h5 class="font-heading font-black text-ink text-sm uppercase tracking-wide mb-3">Level <?= e($level) ?></h5>
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <?php foreach (['lower' => 'First Semester', 'upper' => 'Second Semester'] as $sem => $semLabel): ?>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2"><?= $semLabel ?></p>
+                        <?php if ($sems[$sem]): ?>
+                        <ul class="space-y-1.5">
+                            <?php foreach ($sems[$sem] as [$code, $title]): ?>
+                            <li class="text-sm text-slate-600"><span class="font-bold text-scotsaBlue"><?= e($code) ?></span> &mdash; <?= e($title) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                        <?php else: ?>
+                        <p class="text-sm text-slate-400 italic">Not yet published.</p>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    </div>
+
+    <div data-programme-group>
+    <!-- Short Courses — short standalone courses, so these are plain
+         (non-clickable) cards with no course-structure modal, unlike the
+         degree programme cards above. -->
+    <h3 class="font-heading font-black text-sm uppercase tracking-wide text-slate-400 mb-5 fade-in">Short Courses</h3>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <?php foreach ($programmes['certificate'] as $i => $prog): ?>
+        <div class="prog-card rounded-xl border border-slate-200 bg-white p-6 fade-in fade-in-delay-<?= ($i % 3) + 1 ?>"
+             data-programme-category="<?= e($prog['tag']) ?>">
+            <h4 class="font-heading font-bold text-ink leading-snug text-sm"><?= e($prog['name']) ?></h4>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    </div>
+    </div>
 </section>
 
 <!-- Course structure modal — content is swapped in per-programme on click -->
@@ -606,12 +591,64 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
-<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
+<!-- ═══════════════════════════════════════════════════════════
+     FACILITIES — the department's labs, in a bento grid; tiles
+     reuse the gallery lightbox (data-gallery-lightbox) so clicking
+     one opens the same full-size viewer as the Gallery section.
+════════════════════════════════════════════════════════════ -->
+<section id="facilities" class="section-tint py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12 fade-in">
+        <span class="eyebrow">Where You'll Learn</span>
+        <div class="gold-line mt-3 mx-auto mb-4"></div>
+        <h2 class="font-heading font-black text-3xl text-ink sm:text-4xl">Our Facilities</h2>
+        <p class="text-slate-500 text-sm max-w-md mx-auto mt-3 leading-7">
+            Purpose-built labs for computing, cybersecurity, digital forensics, and robotics &amp; AI.
+        </p>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" style="grid-auto-flow:dense;">
+        <?php
+        $facilityTiles = array_map(static fn (array $r) => [
+            'photo'    => $r['photo_path'],
+            'caption'  => $r['caption'],
+            'featured' => (bool) $r['featured'],
+        ], $pdo->query("SELECT * FROM facilities WHERE status='active' ORDER BY sort_order")->fetchAll());
+        foreach ($facilityTiles as $i => $tile):
+            $fullsize = IMAGES_URL . '/' . $tile['photo'];
+            $featured = !empty($tile['featured']);
+        ?>
+        <div class="facility-tile fade-in fade-in-delay-<?= ($i % 3) + 1 ?> <?= $featured ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : '' ?>"
+             data-gallery-lightbox="<?= e($fullsize) ?>"
+             data-gallery-caption="<?= e($tile['caption']) ?>"
+             <?= !$featured ? 'style="aspect-ratio:4/3;"' : '' ?>>
+            <img src="<?= e($fullsize) ?>"
+                 alt="<?= e($tile['caption']) ?>"
+                 loading="lazy"
+                 onerror="this.src='<?= IMAGES_URL ?>/placeholders/default.svg'; this.onerror=null;">
+            <div class="gallery-overlay">
+                <div>
+                    <p class="font-heading font-bold text-white text-sm leading-snug"><?= e($tile['caption']) ?></p>
+                </div>
+            </div>
+            <div class="gallery-expand">
+                <div class="grid h-8 w-8 place-items-center rounded-lg" style="background:rgba(0,0,0,.45); backdrop-filter:blur(4px);">
+                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    </div>
+</section>
 
 <!-- ═══════════════════════════════════════════════════════════
      WATCH — video showcase
 ════════════════════════════════════════════════════════════ -->
-<section id="watch" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 scroll-mt-20">
+<section id="watch" class="section-plain py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12 fade-in">
         <span class="eyebrow">See It For Yourself</span>
         <div class="gold-line mt-3 mx-auto mb-4"></div>
@@ -621,9 +658,9 @@ require_once __DIR__ . '/includes/header.php';
         </p>
     </div>
 
-    <div class="grid gap-6 sm:grid-cols-2">
+    <div class="flex flex-wrap justify-center gap-8">
         <?php foreach ($videos as $i => $vid): ?>
-        <div class="fade-in fade-in-delay-<?= $i + 1 ?>">
+        <div class="fade-in fade-in-delay-<?= $i + 1 ?> w-full sm:w-[calc(50%-1rem)]">
             <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200" style="aspect-ratio:16/9;">
                 <video controls preload="none" playsinline
                        poster="<?= IMAGES_URL ?>/<?= e($vid['poster']) ?>"
@@ -631,44 +668,48 @@ require_once __DIR__ . '/includes/header.php';
                     <source src="<?= BASE_URL ?>/assets/<?= e($vid['file']) ?>" type="video/mp4">
                 </video>
             </div>
-            <p class="mt-4 font-heading font-bold text-ink"><?= e($vid['title']) ?></p>
+            <p class="mt-4 font-heading font-bold text-lg text-ink"><?= e($vid['title']) ?></p>
             <p class="mt-1 text-sm leading-6 text-slate-500"><?= e($vid['caption']) ?></p>
         </div>
         <?php endforeach; ?>
     </div>
+    </div>
 </section>
-
-<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
 
 <!-- ═══════════════════════════════════════════════════════════
      FACULTY — Heads of Department, Lecturers
-     (the Dean has his own spotlight section right after the hero)
 ════════════════════════════════════════════════════════════ -->
-<section id="faculty" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 scroll-mt-20">
-    <div class="text-center mb-14 fade-in">
+<section id="faculty" class="section-tint py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12 fade-in">
         <span class="eyebrow">Faculty</span>
         <div class="gold-line mt-3 mx-auto mb-4"></div>
-        <h2 class="font-heading font-black text-3xl text-ink">Heads of Department and Lecturers.</h2>
+        <h2 class="font-heading font-black text-3xl text-ink sm:text-4xl">Heads of Department and Lecturers</h2>
         <p class="text-slate-500 text-sm max-w-md mx-auto mt-3 leading-7">
-            The faculty of the School of Computing and Technology, responsible for teaching,
-            research, and academic leadership across all programmes. Select a profile to view
-            a full biography.
+            Tap a photo to view a full profile — courses taught, research interests, publications, and education.
         </p>
     </div>
 
     <?php
-    // Shared card renderer for heads of department / lecturers.
+    // Shared card renderer for heads of department / lecturers. Clicking a
+    // card opens the full-page profile (#faculty-page), not a small modal —
+    // this function renders the trigger button plus a hidden content block
+    // holding that person's five profile panels (Overview / Courses Taught /
+    // Research Interest / Publications / Education), which JS copies into
+    // the shared panel containers when the page opens.
     function scot_faculty_card(array $f): void {
+        static $facultyIdCounter = 0;
+        $id = 'faculty-' . (++$facultyIdCounter);
+
         $displayName = $f['name'] ?: 'Awaiting Appointment';
         $photoUrl    = $f['photo'] ? IMAGES_URL . '/' . $f['photo'] : avatar_url(null, $displayName);
     ?>
     <button type="button"
             class="card-hover group rounded-2xl border border-slate-200 bg-white overflow-hidden fade-in text-left w-full"
-            data-faculty-trigger
+            data-faculty-trigger="<?= $id ?>"
             data-name="<?= e($displayName) ?>"
-            data-role="<?= e($f['role']) ?><?= $f['portfolio'] ? ' — ' . e($f['portfolio']) : '' ?>"
+            data-role="<?= e($f['role']) ?>"
             data-portfolio="<?= e($f['portfolio'] ?? '') ?>"
-            data-bio="<?= e($f['bio'] ?? 'Biography coming soon.') ?>"
             data-photo="<?= e($photoUrl) ?>"
             data-email="<?= e($f['email'] ?? '') ?>">
         <div class="relative overflow-hidden bg-slate-100" style="padding-top:115%;">
@@ -686,14 +727,71 @@ require_once __DIR__ . '/includes/header.php';
             <?php endif; ?>
         </div>
     </button>
+
+    <div class="hidden" data-faculty-content="<?= $id ?>">
+        <div data-panel="overview">
+            <p class="text-sm leading-7 text-slate-600 whitespace-pre-line"><?= e($f['bio'] ?: 'Biography coming soon.') ?></p>
+        </div>
+        <div data-panel="courses">
+            <?php if (!empty($f['courses_taught'])): ?>
+            <ul class="space-y-2.5">
+                <?php foreach ($f['courses_taught'] as $course): ?>
+                <li class="text-sm text-slate-600 flex items-start gap-2">
+                    <span class="mt-2 h-1.5 w-1.5 rounded-full flex-shrink-0" style="background:#D4AF37;"></span>
+                    <?= e($course) ?>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+            <p class="text-sm text-slate-400 italic">Course list to be added.</p>
+            <?php endif; ?>
+        </div>
+        <div data-panel="research">
+            <?php if (!empty($f['research_interest'])): ?>
+            <p class="text-sm leading-7 text-slate-600"><?= e($f['research_interest']) ?></p>
+            <?php else: ?>
+            <p class="text-sm text-slate-400 italic">Research interests to be added.</p>
+            <?php endif; ?>
+        </div>
+        <div data-panel="publications">
+            <?php if (!empty($f['publications'])): ?>
+            <ul class="space-y-3">
+                <?php foreach ($f['publications'] as $pub): ?>
+                <li class="text-sm leading-6 text-slate-600 flex items-start gap-2">
+                    <span class="mt-2 h-1.5 w-1.5 rounded-full flex-shrink-0" style="background:#D4AF37;"></span>
+                    <?= e($pub) ?>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+            <p class="text-sm text-slate-400 italic">Publications to be added.</p>
+            <?php endif; ?>
+        </div>
+        <div data-panel="education">
+            <?php if (!empty($f['education'])): ?>
+            <ul class="space-y-3">
+                <?php foreach ($f['education'] as $edu): ?>
+                <li class="text-sm leading-6 text-slate-600 flex items-start gap-2">
+                    <span class="mt-2 h-1.5 w-1.5 rounded-full flex-shrink-0" style="background:#D4AF37;"></span>
+                    <?= e($edu) ?>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+            <p class="text-sm text-slate-400 italic">Educational background to be added.</p>
+            <?php endif; ?>
+        </div>
+    </div>
     <?php } ?>
 
-    <!-- Heads of Department -->
+    <!-- Dean & Heads of Department — the Dean also lectures, so he's listed
+         here too (first) with the same clickable profile, in addition to
+         his own spotlight section near the top of the page. -->
     <div class="mb-6 text-center fade-in">
-        <span class="eyebrow">Heads of Department</span>
+        <span class="eyebrow">Dean &amp; Heads of Department</span>
     </div>
     <div class="grid gap-6 sm:grid-cols-2 max-w-3xl mx-auto mb-14">
-        <?php foreach ($heads as $head): scot_faculty_card($head); ?>
+        <?php foreach (array_merge([$dean], $heads) as $head): scot_faculty_card($head); ?>
         <?php endforeach; ?>
     </div>
 
@@ -702,9 +800,33 @@ require_once __DIR__ . '/includes/header.php';
         <span class="eyebrow">Lecturers</span>
     </div>
     <?php if ($lecturers): ?>
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <?php foreach ($lecturers as $lecturer): scot_faculty_card($lecturer); ?>
+    <div class="flex flex-wrap justify-center gap-6">
+        <?php foreach ($lecturers as $lecturer): ?>
+        <div class="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)]">
+            <?php scot_faculty_card($lecturer); ?>
+        </div>
         <?php endforeach; ?>
+        <?php
+        // Open seats — a plain "vacant" tile, not a clickable fake profile.
+        // Auto-sized to round the grid up to a clean multiple of 4 (so it
+        // shrinks on its own as real lecturers are added via the admin
+        // dashboard, down to zero once the roster fills a full row).
+        $lecturerPlaceholders = (4 - (count($lecturers) % 4)) % 4;
+        for ($i = 0; $i < $lecturerPlaceholders; $i++):
+        ?>
+        <div class="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)]">
+            <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 overflow-hidden fade-in h-full">
+                <div class="relative overflow-hidden" style="padding-top:115%;">
+                    <div class="absolute inset-0 grid place-items-center">
+                        <?= icon('user-circle', 'h-12 w-12 text-slate-300') ?>
+                    </div>
+                </div>
+                <div class="p-5 text-center">
+                    <p class="font-heading font-bold text-slate-400 text-sm">New Lecturer <?= $i + 1 ?></p>
+                </div>
+            </div>
+        </div>
+        <?php endfor; ?>
     </div>
     <?php else: ?>
     <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-16 text-center fade-in max-w-lg mx-auto">
@@ -717,89 +839,99 @@ require_once __DIR__ . '/includes/header.php';
         </p>
     </div>
     <?php endif; ?>
+    </div>
 </section>
 
-<!-- Faculty bio modal -->
-<div id="faculty-modal" class="lightbox" role="dialog" aria-modal="true" aria-label="Faculty biography">
-    <button id="faculty-modal-close"
-            class="absolute top-5 right-5 grid h-10 w-10 place-items-center rounded-xl text-white/60 hover:text-white transition z-10"
-            style="background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.20);"
-            aria-label="Close">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-    </button>
-    <button id="faculty-modal-prev"
-            class="absolute left-4 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-xl text-white/60 hover:text-white transition z-10"
-            style="background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.20);"
-            aria-label="Previous faculty member">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-        </svg>
-    </button>
-    <button id="faculty-modal-next"
-            class="absolute right-4 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-xl text-white/60 hover:text-white transition z-10"
-            style="background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.20);"
-            aria-label="Next faculty member">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-        </svg>
-    </button>
-
-    <div class="bio-modal-card">
-        <img id="faculty-modal-photo" src="" alt="">
-        <div class="bio-modal-text">
-            <p id="faculty-modal-portfolio" class="eyebrow"></p>
-            <h3 id="faculty-modal-name" class="font-heading font-black text-2xl text-ink mt-3"></h3>
-            <p id="faculty-modal-role" class="mt-1 text-sm font-semibold text-scotsaBlue"></p>
-            <a id="faculty-modal-email" href="" class="mt-2 hidden items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-scotsaBlue transition-colors">
-                <?= icon('mail', 'h-3.5 w-3.5') ?>
-                <span id="faculty-modal-email-text"></span>
-            </a>
-            <p id="faculty-modal-bio" class="mt-4 text-sm leading-7 text-slate-500 whitespace-pre-line"></p>
+<!-- ═══════════════════════════════════════════════════════════
+     FACULTY PROFILE PAGE — full-viewport takeover
+════════════════════════════════════════════════════════════ -->
+<div id="faculty-page">
+    <div class="faculty-page-inner">
+        <div class="faculty-page-topbar">
+            <button type="button" id="faculty-page-close" class="faculty-page-back" aria-label="Back">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </button>
+            <div class="flex items-center gap-3">
+                <button type="button" id="faculty-page-prev" class="faculty-page-nav-btn" aria-label="Previous">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <button type="button" id="faculty-page-next" class="faculty-page-nav-btn" aria-label="Next">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
         </div>
+
+        <div class="faculty-page-header">
+            <img id="faculty-page-photo" src="" alt=""
+                 onerror="this.src='<?= IMAGES_URL ?>/placeholders/avatar.svg'; this.onerror=null;">
+            <div>
+                <span class="eyebrow">School of Computing and Technology</span>
+                <h2 id="faculty-page-name" class="font-heading font-black text-3xl text-ink mt-2"></h2>
+                <p id="faculty-page-role" class="mt-1 text-sm font-bold text-scotsaBlue"></p>
+                <p id="faculty-page-portfolio" class="mt-1 text-sm text-slate-500"></p>
+                <a id="faculty-page-email" href="" class="mt-4 hidden items-center gap-1.5 text-xs font-bold text-scotsaBlue">
+                    <?= icon('mail', 'h-3.5 w-3.5') ?>
+                    <span id="faculty-page-email-text"></span>
+                </a>
+            </div>
+        </div>
+
+        <nav class="faculty-page-tabs" aria-label="Profile sections">
+            <button type="button" class="faculty-tab-btn active" data-faculty-tab="overview">Overview</button>
+            <button type="button" class="faculty-tab-btn" data-faculty-tab="courses">Courses Taught</button>
+            <button type="button" class="faculty-tab-btn" data-faculty-tab="research">Research Interest</button>
+            <button type="button" class="faculty-tab-btn" data-faculty-tab="publications">Publications</button>
+            <button type="button" class="faculty-tab-btn" data-faculty-tab="education">Education</button>
+        </nav>
+
+        <div id="faculty-page-panel-overview" class="faculty-tab-panel active"></div>
+        <div id="faculty-page-panel-courses" class="faculty-tab-panel"></div>
+        <div id="faculty-page-panel-research" class="faculty-tab-panel"></div>
+        <div id="faculty-page-panel-publications" class="faculty-tab-panel"></div>
+        <div id="faculty-page-panel-education" class="faculty-tab-panel"></div>
     </div>
 </div>
 
-<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
-
 <!-- ═══════════════════════════════════════════════════════════
-     STUDENT PROJECTS — real work by SCOT students
+     STUDENT PROJECTS
 ════════════════════════════════════════════════════════════ -->
-<section id="projects" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 scroll-mt-20">
-    <div class="text-center mb-14 fade-in">
+<section id="projects" class="section-plain py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12 fade-in">
         <span class="eyebrow">From the Department</span>
         <div class="gold-line mt-3 mx-auto mb-4"></div>
         <h2 class="font-heading font-black text-3xl text-ink sm:text-4xl">Student Projects</h2>
         <p class="text-slate-500 text-sm max-w-md mx-auto mt-3 leading-7">
-            Final year and capstone work built by SCOT students.
+            Real final-year work from SCOT students, built and demoed as part of their degree.
         </p>
     </div>
 
     <?php foreach ($studentProjects as $project): ?>
     <div class="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] items-start">
-        <div class="mx-auto w-full max-w-sm fade-in">
+        <div class="fade-in">
             <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200" style="aspect-ratio:9/16;">
-                <video controls preload="none" playsinline
+                <video controls preload="none" playsinline muted
                        poster="<?= IMAGES_URL ?>/<?= e($project['poster']) ?>"
                        class="w-full h-full object-cover bg-black">
                     <source src="<?= BASE_URL ?>/assets/<?= e($project['video']) ?>" type="video/mp4">
                 </video>
             </div>
         </div>
-
-        <div class="fade-in fade-in-delay-1">
-            <h3 class="font-heading font-black text-3xl text-ink leading-snug"><?= e($project['title']) ?></h3>
-            <p class="mt-3 text-base font-semibold text-scotsaBlue">
-                <?= e($project['student']) ?> &middot; <?= e($project['programme']) ?>
-            </p>
-            <p class="mt-2 text-lg font-bold text-ink">
+        <div class="fade-in fade-in-delay-2">
+            <h3 class="font-heading font-black text-2xl sm:text-3xl text-ink leading-snug"><?= e($project['title']) ?></h3>
+            <p class="mt-3 text-sm font-bold text-scotsaBlue"><?= e($project['student']) ?> &middot; <?= e($project['programme']) ?></p>
+            <p class="mt-1 text-sm text-slate-500">
                 Supervised by <?= e($project['supervisor']) ?>
                 <?php if (!empty($project['coSupervisor'])): ?> &amp; <?= e($project['coSupervisor']) ?><?php endif; ?>
             </p>
-
-            <p class="mt-6 text-base leading-8 text-slate-500 whitespace-pre-line"><?= e($project['summary']) ?></p>
-
+            <p class="mt-5 text-sm leading-7 text-slate-600 whitespace-pre-line"><?= e($project['summary']) ?></p>
             <div class="mt-7 flex flex-wrap gap-2.5">
                 <?php foreach ($project['stack'] as $tech): ?>
                 <span class="rounded-full border border-slate-200 px-3.5 py-1.5 text-sm font-semibold text-slate-600"><?= e($tech) ?></span>
@@ -808,24 +940,93 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     <?php endforeach; ?>
+    </div>
 </section>
 
-<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
+<!-- ═══════════════════════════════════════════════════════════
+     BLOG — department news & updates. Photo tiles reuse the gallery
+     lightbox (data-gallery-lightbox), same as the Facilities section.
+════════════════════════════════════════════════════════════ -->
+<section id="blog" class="section-tint py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12 fade-in">
+        <span class="eyebrow">News &amp; Updates</span>
+        <div class="gold-line mt-3 mx-auto mb-4"></div>
+        <h2 class="font-heading font-black text-3xl text-ink sm:text-4xl">Blog</h2>
+        <p class="text-slate-500 text-sm max-w-md mx-auto mt-3 leading-7">
+            Department news, partnerships, and milestones from the School of Computing and Technology.
+        </p>
+    </div>
+
+    <?php foreach ($blogPosts as $post): ?>
+    <article class="fade-in">
+        <div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-start mb-10">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">
+                    <?= e(date('F j, Y', strtotime($post['date']))) ?>
+                </p>
+                <h3 class="font-heading font-black text-2xl text-ink leading-snug mb-4"><?= e($post['title']) ?></h3>
+                <p class="text-sm leading-7 text-slate-600 whitespace-pre-line"><?= e($post['excerpt']) ?></p>
+            </div>
+            <?php if (!empty($post['video'])): ?>
+            <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200" style="aspect-ratio:16/9;">
+                <video controls preload="none" playsinline
+                       poster="<?= IMAGES_URL ?>/<?= e($post['poster']) ?>"
+                       class="w-full h-full object-cover bg-black">
+                    <source src="<?= BASE_URL ?>/assets/<?= e($post['video']) ?>" type="video/mp4">
+                </video>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" style="grid-auto-flow:dense;">
+            <?php foreach ($post['photos'] as $i => $photo):
+                $fullsize = IMAGES_URL . '/' . $photo['photo'];
+                $featured = !empty($photo['featured']);
+            ?>
+            <div class="facility-tile fade-in fade-in-delay-<?= ($i % 3) + 1 ?> <?= $featured ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : '' ?>"
+                 data-gallery-lightbox="<?= e($fullsize) ?>"
+                 data-gallery-caption="<?= e($photo['caption']) ?>"
+                 <?= !$featured ? 'style="aspect-ratio:4/3;"' : '' ?>>
+                <img src="<?= e($fullsize) ?>"
+                     alt="<?= e($photo['caption']) ?>"
+                     loading="lazy"
+                     onerror="this.src='<?= IMAGES_URL ?>/placeholders/default.svg'; this.onerror=null;">
+                <div class="gallery-overlay">
+                    <div>
+                        <p class="font-heading font-bold text-white text-sm leading-snug"><?= e($photo['caption']) ?></p>
+                    </div>
+                </div>
+                <div class="gallery-expand">
+                    <div class="grid h-8 w-8 place-items-center rounded-lg" style="background:rgba(0,0,0,.45); backdrop-filter:blur(4px);">
+                        <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </article>
+    <?php endforeach; ?>
+    </div>
+</section>
 
 <!-- ═══════════════════════════════════════════════════════════
      GALLERY — campus moments
 ════════════════════════════════════════════════════════════ -->
-<section id="gallery" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 scroll-mt-20">
+<section id="gallery" class="section-plain py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12 fade-in">
         <span class="eyebrow">Campus Life</span>
         <div class="gold-line mt-3 mx-auto mb-4"></div>
         <h2 class="font-heading font-black text-3xl text-ink sm:text-4xl">Gallery</h2>
         <p class="text-slate-500 text-sm max-w-md mx-auto mt-3 leading-7">
-            Moments from department events, orientation, seminars, and tech exhibitions.
+            Moments from department events, orientation, seminars, and the hackathon.
         </p>
     </div>
 
-    <div class="mb-8 flex gap-2 overflow-x-auto no-scrollbar fade-in">
+    <div class="mb-8 flex flex-wrap gap-2 fade-in">
         <?php foreach ($galleryCategories as $i => $cat): ?>
         <button type="button" class="filter-tab flex-shrink-0 <?= $i === 0 ? 'filter-active' : '' ?>" data-gallery-filter="<?= e($cat) ?>"><?= e($cat) ?></button>
         <?php endforeach; ?>
@@ -859,9 +1060,11 @@ require_once __DIR__ . '/includes/header.php';
         </div>
         <?php endforeach; ?>
     </div>
+    </div>
 </section>
 
-<!-- Gallery photo lightbox -->
+<!-- Gallery photo lightbox — also used by Facilities tiles and Blog photos
+     (any element with data-gallery-lightbox on the page). -->
 <div id="gallery-lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo preview">
     <button id="gallery-lightbox-close"
             class="absolute top-5 right-5 grid h-10 w-10 place-items-center rounded-xl text-white/60 hover:text-white transition z-10"
@@ -887,16 +1090,15 @@ require_once __DIR__ . '/includes/header.php';
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
         </svg>
     </button>
-    <img id="gallery-lightbox-img" src="" alt="" class="select-none">
-    <p id="gallery-lightbox-caption" class="mt-4 text-sm font-medium text-center max-w-lg" style="color:rgba(191,219,254,.65);"></p>
+    <img id="gallery-lightbox-img" src="" alt="" class="lightbox-img">
+    <p id="gallery-lightbox-caption" class="lightbox-caption"></p>
 </div>
-
-<div class="section-divider mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"></div>
 
 <!-- ═══════════════════════════════════════════════════════════
      CONTACT
 ════════════════════════════════════════════════════════════ -->
-<section id="contact" class="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8 scroll-mt-20">
+<section id="contact" class="section-tint py-20 scroll-mt-20">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12 fade-in">
         <span class="eyebrow">Get in Touch</span>
         <div class="gold-line mt-3 mx-auto mb-4"></div>
@@ -906,41 +1108,37 @@ require_once __DIR__ . '/includes/header.php';
         </p>
     </div>
 
-    <div class="grid gap-5 sm:grid-cols-2 mb-6">
-        <a href="mailto:scotsawiuc@gmail.com" class="contact-card group fade-in">
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <a href="mailto:<?= e($setting('contact_email')) ?>" class="contact-card group fade-in">
             <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
+                <?= icon('mail', 'h-6 w-6') ?>
             </div>
             <div class="min-w-0">
                 <p class="font-heading font-bold text-ink text-sm">Email</p>
-                <p class="text-xs font-semibold mt-1 text-scotsaBlue">scotsawiuc@gmail.com</p>
+                <p class="text-xs font-semibold mt-1 text-scotsaBlue"><?= e($setting('contact_email')) ?></p>
             </div>
         </a>
 
-        <a href="https://chat.whatsapp.com/Cn2b43LoXOH1WGCg0uBaNR?s=cl&p=i&mlu=4" target="_blank" rel="noopener" class="contact-card group fade-in fade-in-delay-1">
-            <div class="social-icon flex-shrink-0" style="background:rgba(37,211,102,.12); color:#1DA851;">
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
+        <a href="tel:<?= e(preg_replace('/\s+/', '', $setting('contact_phone'))) ?>" class="contact-card group fade-in fade-in-delay-1">
+            <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
+                <?= icon('phone', 'h-6 w-6') ?>
             </div>
             <div class="min-w-0">
-                <p class="font-heading font-bold text-ink text-sm">WhatsApp</p>
-                <p class="text-xs font-semibold mt-1 text-scotsaBlue">Join the community</p>
+                <p class="font-heading font-bold text-ink text-sm">Phone</p>
+                <p class="text-xs font-semibold mt-1 text-scotsaBlue"><?= e($setting('contact_phone')) ?></p>
+            </div>
+        </a>
+
+        <a href="https://www.google.com/maps?q=5.670433,-0.1893348" target="_blank" rel="noopener" class="contact-card group fade-in fade-in-delay-2">
+            <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
+                <?= icon('map-pin', 'h-6 w-6') ?>
+            </div>
+            <div class="min-w-0">
+                <p class="font-heading font-bold text-ink text-sm">Campus</p>
+                <p class="text-xs font-semibold mt-1 text-scotsaBlue"><?= e($setting('contact_address')) ?></p>
             </div>
         </a>
     </div>
-
-    <div class="rounded-2xl border border-slate-200 overflow-hidden fade-in fade-in-delay-2" style="min-height:280px;">
-        <iframe
-            src="https://www.google.com/maps?q=5.670433,-0.1893348&z=16&output=embed"
-            class="w-full border-0"
-            style="min-height:320px;"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            title="Map showing Wisconsin International University College, Ghana">
-        </iframe>
     </div>
 </section>
 
