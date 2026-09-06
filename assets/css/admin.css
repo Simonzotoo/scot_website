@@ -134,6 +134,26 @@ h1, h2, h3, .admin-brand, .admin-nav-link, button, .admin-btn {
 .admin-textarea { resize: vertical; min-height: 6rem; }
 .admin-checkbox-row { display: flex; align-items: center; gap: .5rem; }
 
+.admin-password-field { position: relative; }
+.admin-password-field .admin-input { padding-right: 2.6rem; }
+.admin-password-toggle {
+    position: absolute;
+    top: 0; right: 0;
+    height: 100%;
+    width: 2.6rem;
+    display: grid;
+    place-items: center;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 0 .5rem .5rem 0;
+    transition: color .15s ease;
+}
+.admin-password-toggle:hover { color: var(--royal); }
+.admin-password-toggle:focus-visible { outline: 2px solid var(--royal); outline-offset: -2px; }
+
 .admin-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .admin-table th { text-align: left; font-weight: 800; color: var(--text-muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; padding: .6rem .75rem; border-bottom: 2px solid var(--border); }
 .admin-table td { padding: .7rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }

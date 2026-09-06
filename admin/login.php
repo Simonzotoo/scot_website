@@ -59,11 +59,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="admin-form-row">
                 <label for="password">Password</label>
-                <input class="admin-input" type="password" id="password" name="password" required>
+                <div class="admin-password-field">
+                    <input class="admin-input" type="password" id="password" name="password" required>
+                    <button type="button" class="admin-password-toggle" data-toggle-password="password" aria-label="Show password" aria-pressed="false">
+                        <span data-icon-show><?= icon('eye', 'h-4 w-4') ?></span>
+                        <span data-icon-hide class="hidden"><?= icon('eye-slash', 'h-4 w-4') ?></span>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="admin-btn" style="width:100%; justify-content:center;">Sign In</button>
         </form>
     </div>
 </div>
+<script src="<?= BASE_URL ?>/assets/js/admin.js"></script>
 </body>
 </html>

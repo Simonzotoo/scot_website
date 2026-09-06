@@ -166,3 +166,25 @@
         toggleCourseSections();
     }
 })();
+
+/* Show/hide password toggle (login screen) — independent of the other
+   IIFEs above so it works even on pages that load neither SweetAlert2
+   nor any repeater fields. */
+(function () {
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-toggle-password]');
+        if (!btn) return;
+        var input = document.getElementById(btn.dataset.togglePassword);
+        if (!input) return;
+
+        var showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        btn.setAttribute('aria-pressed', String(!showing));
+        btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+
+        var showIcon = btn.querySelector('[data-icon-show]');
+        var hideIcon = btn.querySelector('[data-icon-hide]');
+        if (showIcon) showIcon.classList.toggle('hidden', !showing);
+        if (hideIcon) hideIcon.classList.toggle('hidden', showing);
+    });
+})();
