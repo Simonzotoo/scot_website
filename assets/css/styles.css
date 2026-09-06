@@ -1469,8 +1469,20 @@ canvas { display: block; max-width: 100%; }
     border-color: rgba(255,255,255,.25);
 }
 #cookie-consent .cookie-decline:hover { border-color: rgba(255,255,255,.5); color: #fff; }
+/* Phone: a slim bar, not a stacked card — short text on its own line,
+   small buttons side by side underneath rather than full-width. */
 @media (max-width: 480px) {
-    #cookie-consent { flex-direction: column; align-items: stretch; }
-    #cookie-consent .cookie-actions { justify-content: stretch; }
-    #cookie-consent .cookie-actions button { flex: 1; }
+    #cookie-consent {
+        left: .5rem;
+        right: .5rem;
+        bottom: .5rem;
+        max-width: none;
+        margin: 0;
+        padding: .75rem .85rem;
+        border-radius: .75rem;
+        gap: .5rem;
+    }
+    #cookie-consent p { flex-basis: 100%; font-size: .72rem; line-height: 1.45; }
+    #cookie-consent .cookie-actions { width: 100%; justify-content: flex-end; gap: .5rem; }
+    #cookie-consent button { padding: .4rem .85rem; font-size: .72rem; }
 }
