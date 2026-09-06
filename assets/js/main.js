@@ -20,9 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ════════════════════════════════════════════════════════ */
     const html         = document.documentElement;
     const themeToggles = document.querySelectorAll('[data-theme-toggle]');
-    const stored       = localStorage.getItem('scotsa-theme');
-    const preferred    = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const initial      = stored || preferred;
+    // Defaults to light unless the visitor has explicitly toggled dark
+    // before (stored in localStorage) — matches assets/js/theme-init.js,
+    // which already applied this same default before first paint.
+    const initial      = localStorage.getItem('scotsa-theme') || 'light';
 
     function applyTheme(theme) {
         html.setAttribute('data-theme', theme);
