@@ -1,4 +1,18 @@
 /* ── SCOTSA Platform — Premium JS ─────────────────────────── */
+
+/* Broken-image fallback: any <img data-fallback="..."> swaps to that URL
+   if its real src 404s. Registered at the top level (not inside
+   DOMContentLoaded) and on the capture phase, since 'error' doesn't
+   bubble — this has to be listening before any image has a chance to
+   fail. Kept as a delegated listener rather than inline onerror="..." so
+   it runs under this site's CSP (script-src has no 'unsafe-inline'). */
+document.addEventListener('error', (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement) || !img.dataset.fallback) return;
+    if (img.src === img.dataset.fallback) return; // already showing the fallback — don't loop
+    img.src = img.dataset.fallback;
+}, true);
+
 document.addEventListener('DOMContentLoaded', () => {
 
     /* ════════════════════════════════════════════════════════

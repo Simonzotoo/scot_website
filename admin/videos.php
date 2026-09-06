@@ -153,7 +153,7 @@ require __DIR__ . '/includes/admin_header.php';
             <td><span class="admin-badge admin-badge-<?= e($v['status']) ?>"><?= e($v['status']) ?></span></td>
             <td class="admin-table-actions">
                 <a class="admin-btn admin-btn-sm admin-btn-secondary" href="?edit=<?= $v['id'] ?>">Edit</a>
-                <form method="post" onsubmit="return confirm('Delete this video?');">
+                <form method="post" data-confirm="Delete this video?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?= $v['id'] ?>">

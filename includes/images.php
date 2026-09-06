@@ -5,7 +5,9 @@ declare(strict_types=1);
  * Image paths: use these constants directly in templates.
  *
  * To use an image:  <img src="<?= IMAGES_URL ?>/gallery/my-photo.jpg">
- * Fallback:         onerror="this.src='<?= IMAGES_URL ?>/placeholders/default.svg'; this.onerror=null;"
+ * Fallback:         data-fallback="<?= IMAGES_URL ?>/placeholders/default.svg"
+ *                   (handled by the delegated 'error' listener in assets/js/main.js —
+ *                   not inline onerror="...", which this site's CSP blocks)
  *
  * Folder map:
  *   logo/         → logo-dark.png (nav), logo-light.png (footer/admin), favicon.png

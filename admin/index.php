@@ -20,12 +20,20 @@ foreach ($tiles as $key => [$href, $label, $sql]) {
     $counts[$key] = (int) db()->query($sql)->fetchColumn();
 }
 
+$hour = (int) date('G');
+$greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+$firstName = explode(' ', trim($admin['name']))[0] ?? $admin['name'];
+
 $pageTitle = 'Dashboard';
 $activeNav = 'dashboard';
 require __DIR__ . '/includes/admin_header.php';
 ?>
 
-<p style="color:#64748b; font-size:.9rem; margin-top:0;">Welcome back, <?= e($admin['name']) ?>. Pick a section to manage.</p>
+<div class="admin-welcome-card">
+    <span class="gold-line"></span>
+    <h2><?= e($greeting) ?>, <?= e($firstName) ?>.</h2>
+    <p>Pick a section below to manage — every change here goes live on the public site immediately.</p>
+</div>
 
 <div class="admin-dashboard-grid">
     <?php foreach ($tiles as $key => [$href, $label, $sql]): ?>
@@ -35,7 +43,6 @@ require __DIR__ . '/includes/admin_header.php';
     </a>
     <?php endforeach; ?>
     <a href="<?= BASE_URL ?>/admin/settings.php" class="admin-dashboard-tile">
-        <div class="count">&#9881;</div>
         <div class="label">About / Contact / Social</div>
     </a>
 </div>

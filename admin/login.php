@@ -19,12 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = clean_text($_POST['email'] ?? '');
     $password = (string) ($_POST['password'] ?? '');
 
-    if ($email !== '' && $password !== '' && attempt_admin_login($email, $password)) {
-        header('Location: ' . BASE_URL . '/admin/index.php');
-        exit;
+    try {
+        if ($email !== '' && $password !== '' && attempt_admin_login($email, $password)) {
+            header('Location: ' . BASE_URL . '/admin/index.php');
+            exit;
+        }
+        $error = 'Incorrect email or password.';
+    } catch (TooManyLoginAttemptsException $e) {
+        $error = $e->getMessage();
     }
-
-    $error = 'Incorrect email or password.';
 }
 ?>
 <!doctype html>
@@ -39,6 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="admin-body">
 <div class="admin-login-shell">
+    <div class="admin-login-logo">
+        <img src="<?= IMAGES_URL ?>/logo/scot-logo-dark.png" alt="SCOT — School of Computing and Technology">
+    </div>
     <div class="admin-login-card">
         <h1>SCOT Admin</h1>
         <p class="sub">Sign in to manage the department site.</p>

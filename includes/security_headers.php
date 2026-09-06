@@ -51,15 +51,18 @@ function apply_security_headers(): void
     header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
 
     // Allow-list built from what this app actually loads: SweetAlert2 and
-    // PDF.js from their CDNs, Google Fonts, and the Google Maps embed on
-    // contact.php. style-src needs 'unsafe-inline' because templates use
-    // inline style="..." attributes throughout.
+    // PDF.js from their CDNs, Google Fonts, the Google Maps embed on
+    // contact.php, and Google Analytics (only ever requested once a
+    // visitor accepts the cookie banner — see assets/js/consent.js).
+    // style-src needs 'unsafe-inline' because templates use inline
+    // style="..." attributes throughout.
     header("Content-Security-Policy: "
         . "default-src 'self'; "
-        . "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        . "script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com; "
         . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         . "font-src https://fonts.gstatic.com; "
-        . "img-src 'self' data:; "
+        . "img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com; "
+        . "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com; "
         . "frame-src https://www.google.com; "
         . "base-uri 'self'; form-action 'self'");
 }

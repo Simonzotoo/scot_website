@@ -14,6 +14,11 @@
     --gold:       #D4AF37;
     --gold-hover: #b8961e;
     --gold-light: rgba(212,175,55,.12);
+    /* Same hue as --gold, darkened to pass WCAG AA (4.5:1) as text on a
+       light background — --gold itself is only ~2.1:1 on white, which
+       fails for small/bold text like .eyebrow. Reserve --gold for fills,
+       borders, and text on dark backgrounds, where it already passes. */
+    --gold-text:  #8C6D08;
     --ink:        #0F172A;
 
     /* Surfaces (light) */
@@ -565,12 +570,18 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 ════════════════════════════════════════════════════════════ */
 .eyebrow {
     display: inline-block;
-    color: var(--gold);
+    color: var(--gold-text);
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+}
+/* On a dark background (hero photo, dark-mode surfaces) the full-brightness
+   brand gold already clears WCAG AA comfortably — use it there instead. */
+[data-theme="dark"] .eyebrow,
+.hero-grid .eyebrow {
+    color: var(--gold);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1340,3 +1351,126 @@ html { scroll-behavior: smooth; }
 /* Chart.js canvas — ensure it fills container */
 canvas { display: block; max-width: 100%; }
 [data-theme="dark"] .swal2-icon--question { border-color: rgba(99,102,241,.50) !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER SOCIAL ICONS — hover state as plain CSS instead of
+   onmouseover/onmouseout (blocked by this site's CSP; also just
+   simpler than JS for a static color swap).
+════════════════════════════════════════════════════════════ */
+.social-icon-link {
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.15);
+    color: rgba(191,219,254,.65);
+}
+.social-icon-link:hover {
+    background: rgba(212,175,55,.08);
+    border-color: rgba(212,175,55,.5);
+    color: #D4AF37;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SKIP LINK — invisible until keyboard-focused, first thing a
+   screen-reader/keyboard user encounters. Lets them bypass the
+   header and jump straight to #main-content.
+════════════════════════════════════════════════════════════ */
+.skip-link {
+    position: absolute;
+    top: -3rem;
+    left: 1rem;
+    z-index: 1100;
+    background: var(--royal);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: .875rem;
+    padding: .65rem 1.1rem;
+    border-radius: .5rem;
+    text-decoration: none;
+    transition: top 150ms ease;
+}
+.skip-link:focus {
+    top: 1rem;
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING BAR — thin progress indicator across the very top of
+   the viewport while the page's critical assets finish loading.
+   Driven by assets/js/loading-bar.js; respects reduced-motion.
+════════════════════════════════════════════════════════════ */
+#loading-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    z-index: 1200;
+    background: linear-gradient(to right, var(--gold), #F5D77A);
+    box-shadow: 0 0 8px rgba(212,175,55,.6);
+    transition: width 400ms ease, opacity 300ms ease 200ms;
+    opacity: 1;
+}
+#loading-bar.done { width: 100%; opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+    #loading-bar { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COOKIE CONSENT BANNER
+════════════════════════════════════════════════════════════ */
+#cookie-consent {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1150;
+    max-width: 40rem;
+    margin: 0 auto;
+    background: var(--royal);
+    color: rgba(255,255,255,.88);
+    border-radius: 1rem;
+    box-shadow: 0 20px 48px rgba(0,0,0,.35);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    transform: translateY(calc(100% + 2rem));
+    transition: transform 320ms var(--ease-spring);
+}
+#cookie-consent.visible { transform: translateY(0); }
+#cookie-consent p {
+    flex: 1 1 18rem;
+    font-size: .8rem;
+    line-height: 1.6;
+    margin: 0;
+    color: rgba(219,234,254,.8);
+}
+#cookie-consent .cookie-actions {
+    display: flex;
+    gap: .6rem;
+    flex-shrink: 0;
+}
+#cookie-consent button {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: .8rem;
+    padding: .55rem 1.1rem;
+    border-radius: .5rem;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+#cookie-consent .cookie-accept { background: var(--gold); color: var(--royal); }
+#cookie-consent .cookie-accept:hover { background: var(--gold-hover); }
+#cookie-consent .cookie-decline {
+    background: transparent;
+    color: rgba(255,255,255,.75);
+    border-color: rgba(255,255,255,.25);
+}
+#cookie-consent .cookie-decline:hover { border-color: rgba(255,255,255,.5); color: #fff; }
+@media (max-width: 480px) {
+    #cookie-consent { flex-direction: column; align-items: stretch; }
+    #cookie-consent .cookie-actions { justify-content: stretch; }
+    #cookie-consent .cookie-actions button { flex: 1; }
+}

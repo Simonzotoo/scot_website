@@ -312,7 +312,7 @@ require_once __DIR__ . '/includes/header.php';
                 <img src="<?= IMAGES_URL ?>/<?= e($dean['photo']) ?>" alt="<?= e($dean['name']) ?>"
                      class="absolute inset-0 h-full w-full object-cover"
                      style="object-position:50% 10%;"
-                     onerror="this.src='<?= IMAGES_URL ?>/placeholders/avatar.svg'; this.onerror=null;">
+                     data-fallback="<?= IMAGES_URL ?>/placeholders/avatar.svg">
             </div>
         </div>
 
@@ -625,7 +625,7 @@ require_once __DIR__ . '/includes/header.php';
             <img src="<?= e($fullsize) ?>"
                  alt="<?= e($tile['caption']) ?>"
                  loading="lazy"
-                 onerror="this.src='<?= IMAGES_URL ?>/placeholders/default.svg'; this.onerror=null;">
+                 data-fallback="<?= IMAGES_URL ?>/placeholders/default.svg">
             <div class="gallery-overlay">
                 <div>
                     <p class="font-heading font-bold text-white text-sm leading-snug"><?= e($tile['caption']) ?></p>
@@ -717,7 +717,7 @@ require_once __DIR__ . '/includes/header.php';
                  class="absolute inset-0 h-full w-full object-cover"
                  style="object-position:50% 15%;"
                  loading="lazy"
-                 onerror="this.src='<?= IMAGES_URL ?>/placeholders/avatar.svg'; this.onerror=null;">
+                 data-fallback="<?= IMAGES_URL ?>/placeholders/avatar.svg">
         </div>
         <div class="p-5 text-center">
             <p class="font-heading font-bold text-ink text-sm"><?= e($displayName) ?></p>
@@ -870,7 +870,7 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="faculty-page-header">
             <img id="faculty-page-photo" src="" alt=""
-                 onerror="this.src='<?= IMAGES_URL ?>/placeholders/avatar.svg'; this.onerror=null;">
+                 data-fallback="<?= IMAGES_URL ?>/placeholders/avatar.svg">
             <div>
                 <span class="eyebrow">School of Computing and Technology</span>
                 <h2 id="faculty-page-name" class="font-heading font-black text-3xl text-ink mt-2"></h2>
@@ -991,7 +991,7 @@ require_once __DIR__ . '/includes/header.php';
                 <img src="<?= e($fullsize) ?>"
                      alt="<?= e($photo['caption']) ?>"
                      loading="lazy"
-                     onerror="this.src='<?= IMAGES_URL ?>/placeholders/default.svg'; this.onerror=null;">
+                     data-fallback="<?= IMAGES_URL ?>/placeholders/default.svg">
                 <div class="gallery-overlay">
                     <div>
                         <p class="font-heading font-bold text-white text-sm leading-snug"><?= e($photo['caption']) ?></p>
@@ -1043,7 +1043,7 @@ require_once __DIR__ . '/includes/header.php';
             <img src="<?= e($fullsize) ?>"
                  alt="<?= e($photo['caption']) ?>"
                  loading="lazy"
-                 onerror="this.src='<?= IMAGES_URL ?>/placeholders/default.svg'; this.onerror=null;">
+                 data-fallback="<?= IMAGES_URL ?>/placeholders/default.svg">
             <div class="gallery-overlay">
                 <div>
                     <p class="font-heading font-bold text-white text-sm leading-snug"><?= e($photo['caption']) ?></p>
