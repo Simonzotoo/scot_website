@@ -139,7 +139,7 @@ require __DIR__ . '/includes/admin_header.php';
             <td><span class="admin-badge admin-badge-<?= e($s['status']) ?>"><?= e($s['status']) ?></span></td>
             <td class="admin-table-actions">
                 <a class="admin-btn admin-btn-sm admin-btn-secondary" href="?edit=<?= $s['id'] ?>">Edit</a>
-                <form method="post" onsubmit="return confirm('Delete this slide?');">
+                <form method="post" data-confirm="Delete this slide?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?= $s['id'] ?>">

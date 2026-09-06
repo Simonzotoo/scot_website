@@ -117,7 +117,7 @@ require __DIR__ . '/includes/admin_header.php';
 
         <div class="admin-form-row">
             <label>Type</label>
-            <select class="admin-select" name="tag" id="tag-select" onchange="toggleCourseSections()">
+            <select class="admin-select" name="tag" id="tag-select">
                 <?php foreach (['BSc', 'MSc', 'Diploma', 'Short Courses'] as $t): ?>
                 <option value="<?= $t ?>" <?= ($editing['tag'] ?? 'BSc') === $t ? 'selected' : '' ?>><?= $t ?></option>
                 <?php endforeach; ?>
@@ -156,11 +156,11 @@ require __DIR__ . '/includes/admin_header.php';
                     <div class="admin-repeater-row">
                         <input class="admin-input" style="max-width:120px;" type="text" placeholder="Code" name="courses[<?= $levelKey ?>][<?= $semKey ?>][][code]" value="<?= e($row[0]) ?>">
                         <input class="admin-input" type="text" placeholder="Course title" name="courses[<?= $levelKey ?>][<?= $semKey ?>][][title]" value="<?= e($row[1]) ?>">
-                        <button type="button" class="admin-repeater-remove" onclick="this.parentElement.remove()">&times;</button>
+                        <button type="button" class="admin-repeater-remove" data-remove-row>&times;</button>
                     </div>
                     <?php endforeach; ?>
                 </div>
-                <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" onclick="addCourseRow('<?= $levelKey ?>','<?= $semKey ?>')">+ Add Course</button>
+                <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" data-add-course-row data-level="<?= e((string) $levelKey) ?>" data-sem="<?= e($semKey) ?>">+ Add Course</button>
                 <?php endforeach; ?>
             </div>
             <?php endforeach; ?>
@@ -175,11 +175,11 @@ require __DIR__ . '/includes/admin_header.php';
                     <?php foreach (($editMsc[$group] ?: ['']) as $title): ?>
                     <div class="admin-repeater-row">
                         <input class="admin-input" type="text" placeholder="Course title" name="msc_courses[<?= $group ?>][]" value="<?= e($title) ?>">
-                        <button type="button" class="admin-repeater-remove" onclick="this.parentElement.remove()">&times;</button>
+                        <button type="button" class="admin-repeater-remove" data-remove-row>&times;</button>
                     </div>
                     <?php endforeach; ?>
                 </div>
-                <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" onclick="addMscRow('<?= $group ?>')">+ Add Course</button>
+                <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" data-add-msc-row data-group="<?= e($group) ?>">+ Add Course</button>
             </div>
             <?php endforeach; ?>
         </div>
@@ -207,7 +207,7 @@ require __DIR__ . '/includes/admin_header.php';
             <td><?= $p['featured'] ? 'Yes' : '' ?></td>
             <td class="admin-table-actions">
                 <a class="admin-btn admin-btn-sm admin-btn-secondary" href="?edit=<?= $p['id'] ?>">Edit</a>
-                <form method="post" onsubmit="return confirm('Delete this programme and its course list?');">
+                <form method="post" data-confirm="Delete this programme and its course list?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
@@ -219,34 +219,5 @@ require __DIR__ . '/includes/admin_header.php';
         </tbody>
     </table>
 </div>
-
-<script>
-function addCourseRow(level, sem) {
-    const wrap = document.querySelector('[data-course-repeater="' + level + '-' + sem + '"]');
-    const row = document.createElement('div');
-    row.className = 'admin-repeater-row';
-    row.innerHTML = '<input class="admin-input" style="max-width:120px;" type="text" placeholder="Code" name="courses[' + level + '][' + sem + '][][code]" value="">' +
-        '<input class="admin-input" type="text" placeholder="Course title" name="courses[' + level + '][' + sem + '][][title]" value="">' +
-        '<button type="button" class="admin-repeater-remove" onclick="this.parentElement.remove()">&times;</button>';
-    wrap.appendChild(row);
-    row.querySelector('input').focus();
-}
-function addMscRow(group) {
-    const wrap = document.querySelector('[data-msc-repeater="' + group + '"]');
-    const row = document.createElement('div');
-    row.className = 'admin-repeater-row';
-    row.innerHTML = '<input class="admin-input" type="text" placeholder="Course title" name="msc_courses[' + group + '][]" value="">' +
-        '<button type="button" class="admin-repeater-remove" onclick="this.parentElement.remove()">&times;</button>';
-    wrap.appendChild(row);
-    row.querySelector('input').focus();
-}
-function toggleCourseSections() {
-    const tag = document.getElementById('tag-select').value;
-    document.getElementById('section-levels').style.display = (tag === 'BSc' || tag === 'Diploma') ? '' : 'none';
-    document.getElementById('section-msc').style.display = (tag === 'MSc') ? '' : 'none';
-    document.getElementById('section-short').style.display = (tag === 'Short Courses') ? '' : 'none';
-}
-toggleCourseSections();
-</script>
 
 <?php require __DIR__ . '/includes/admin_footer.php'; ?>

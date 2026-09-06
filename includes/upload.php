@@ -17,6 +17,34 @@ const UPLOAD_MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 const UPLOAD_MAX_VIDEO_BYTES = 500 * 1024 * 1024;
 
 /**
+ * Per-section max dimensions — sized to how large each image ever
+ * actually renders on the public page (checked against styles.css),
+ * plus headroom for ~2x retina displays. Uploads get resized down to
+ * these, not to one flat cap, so a lecturer photo (~290px-wide grid
+ * card) isn't stored at the same size as a full-bleed hero background.
+ */
+const IMAGE_SUBFOLDER_MAX_DIM = [
+    'hero'          => 2000, // full-bleed section background — the largest real display context on the page
+    'gallery'       => 1920, // lightbox opens up to 960 CSS px wide (.lightbox img) — 2x for retina
+    'labs'          => 1920, // facility tiles reuse the same lightbox
+    'blog'          => 1920, // blog photos reuse the same tile + lightbox pattern
+    'faculty'       => 1400, // largest use is the Dean's ~520px-wide portrait — 2x for retina
+    'video-posters' => 1400, // Watch-section poster frame is ~600px wide at most — 2x for retina
+];
+const IMAGE_DEFAULT_MAX_DIM = 1920;
+
+/**
+ * Per-section max video width, matching the ~608px-wide 16:9 card the
+ * Watch/Blog/Projects sections all use (2x retina headroom included).
+ */
+const VIDEO_SUBFOLDER_MAX_WIDTH = [
+    'watch'    => 1280,
+    'blog'     => 1280,
+    'projects' => 1280,
+];
+const VIDEO_DEFAULT_MAX_WIDTH = 1280;
+
+/**
  * @param array $file One entry from $_FILES (already confirmed non-empty by the caller)
  * @param string $subfolder e.g. 'gallery', 'faculty', 'labs', 'blog'
  * @return string relative path (e.g. "gallery/abc123.jpg") to store in the DB
@@ -56,7 +84,7 @@ function handle_image_upload(array $file, string $subfolder): string
 
     $width  = imagesx($src);
     $height = imagesy($src);
-    $maxDim = 2000;
+    $maxDim = IMAGE_SUBFOLDER_MAX_DIM[$subfolder] ?? IMAGE_DEFAULT_MAX_DIM;
     if (max($width, $height) > $maxDim) {
         $scale     = $maxDim / max($width, $height);
         $newWidth  = (int) round($width * $scale);
@@ -173,12 +201,13 @@ function handle_video_upload(array $file, string $subfolder, string $posterSubfo
         ];
     }
 
+    $maxWidth = VIDEO_SUBFOLDER_MAX_WIDTH[$subfolder] ?? VIDEO_DEFAULT_MAX_WIDTH;
     $tmpIn = $file['tmp_name'];
     $cmd = sprintf(
         '%s -y -i %s -vf %s -c:v libx264 -crf 24 -preset fast -c:a aac -b:a 128k -movflags +faststart %s 2>&1',
         escapeshellarg($ffmpeg),
         escapeshellarg($tmpIn),
-        escapeshellarg("scale='min(1280,iw)':-2"),
+        escapeshellarg("scale='min({$maxWidth},iw)':-2"),
         escapeshellarg($destPath)
     );
     exec($cmd, $out, $exitCode);

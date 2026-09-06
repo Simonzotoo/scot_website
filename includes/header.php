@@ -2,6 +2,10 @@
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/security.php';
 $pageTitle = $pageTitle ?? APP_NAME;
+$pageDescription = $pageDescription
+    ?? 'SCOT: The School of Computing and Technology at Wisconsin International University College (WIUC), Accra — undergraduate, diploma, and postgraduate programmes, faculty, and student life.';
+$canonicalUrl = SITE_URL . $_SERVER['REQUEST_URI'];
+$ogImageUrl = SITE_URL . '/assets/images/social/og-image.jpg';
 ?>
 <!doctype html>
 <html lang="en">
@@ -9,26 +13,49 @@ $pageTitle = $pageTitle ?? APP_NAME;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($pageTitle) ?></title>
-    <meta name="description" content="SCOT: The School of Computing and Technology at Wisconsin International University College (WIUC), Accra — home of SCOTSA, the department's student association.">
+    <meta name="description" content="<?= e($pageDescription) ?>">
+    <link rel="canonical" href="<?= e($canonicalUrl) ?>">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="<?= BASE_URL ?>/assets/images/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= BASE_URL ?>/assets/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= BASE_URL ?>/assets/images/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= BASE_URL ?>/assets/images/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="<?= BASE_URL ?>/assets/images/favicon/site.webmanifest">
+    <meta name="theme-color" content="#0A1F44">
+
+    <!-- Open Graph / social share preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="SCOT — WIUC Ghana">
+    <meta property="og:title" content="<?= e($pageTitle) ?>">
+    <meta property="og:description" content="<?= e($pageDescription) ?>">
+    <meta property="og:url" content="<?= e($canonicalUrl) ?>">
+    <meta property="og:image" content="<?= e($ogImageUrl) ?>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_GB">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= e($pageTitle) ?>">
+    <meta name="twitter:description" content="<?= e($pageDescription) ?>">
+    <meta name="twitter:image" content="<?= e($ogImageUrl) ?>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 
-    <!-- Apply saved theme before any paint: prevents flash of wrong theme -->
-    <script>
-        (function() {
-            var t = localStorage.getItem('scotsa-theme');
-            if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', t);
-            if (t === 'dark') document.documentElement.classList.add('dark');
-        })();
-    </script>
+    <!-- Applies the saved theme before first paint (prevents a flash of
+         the wrong theme) — external file so it runs under this site's CSP. -->
+    <script src="<?= BASE_URL ?>/assets/js/theme-init.js"></script>
 
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/tailwind.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/styles.css">
 </head>
-<body class="bg-white dark:bg-[#0b1120] text-ink dark:text-slate-100 antialiased transition-colors duration-200">
+<body class="bg-white dark:bg-[#0b1120] text-ink dark:text-slate-100 antialiased transition-colors duration-200"
+      data-ga-id="<?= e(GA_MEASUREMENT_ID) ?>">
+
+<div id="loading-bar" aria-hidden="true"></div>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
 
 <!-- ── Header ──────────────────────────────────────────────── -->
 <!--
@@ -41,21 +68,14 @@ $pageTitle = $pageTitle ?? APP_NAME;
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
 
         <a href="<?= BASE_URL ?>/index.php"
-           class="group flex items-center flex-shrink-0
+           class="group flex items-center flex-shrink-0 transition-opacity duration-200 hover:opacity-80
                   rounded-xl focus-visible:outline-none focus-visible:ring-2
                   focus-visible:ring-scotsaGold focus-visible:ring-offset-2"
            aria-label="SCOT Home">
-            <div class="leading-none min-w-0">
-                <span class="block font-heading font-black text-scotsaBlue dark:text-white
-                             tracking-[-0.015em] transition-colors duration-200
-                             group-hover:text-scotsaLight dark:group-hover:text-scotsaGold"
-                      style="font-size:1.85rem; line-height:1;">SCOT</span>
-                <span class="hidden sm:block font-heading font-black uppercase text-scotsaBlue dark:text-slate-200
-                             transition-colors duration-200 mt-[6px] whitespace-nowrap"
-                      style="font-size:.78rem; letter-spacing:.05em; line-height:1.2;">
-                    School of Computing &amp; Technology
-                </span>
-            </div>
+            <img src="<?= IMAGES_URL ?>/logo/scot-logo.png" alt="SCOT — School of Computing and Technology"
+                 class="block dark:hidden h-10 sm:h-14 w-auto">
+            <img src="<?= IMAGES_URL ?>/logo/scot-logo-dark.png" alt="SCOT — School of Computing and Technology"
+                 class="hidden dark:block h-10 sm:h-14 w-auto">
         </a>
 
         <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
@@ -70,7 +90,7 @@ $pageTitle = $pageTitle ?? APP_NAME;
     </div>
 </header>
 
-<main>
+<main id="main-content">
 <?php foreach (consume_flash() as $message): ?>
     <div class="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8" data-flash>
         <div class="rounded-xl border px-4 py-3 text-sm <?= $message['type'] === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400' ?>">

@@ -221,7 +221,7 @@ require __DIR__ . '/includes/admin_header.php';
             <td><span class="admin-badge admin-badge-<?= $p['status'] === 'published' ? 'active' : 'archived' ?>"><?= e($p['status']) ?></span></td>
             <td class="admin-table-actions">
                 <a class="admin-btn admin-btn-sm admin-btn-secondary" href="?edit=<?= $p['id'] ?>">Edit</a>
-                <form method="post" onsubmit="return confirm('Delete this post?');">
+                <form method="post" data-confirm="Delete this post?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?= $p['id'] ?>">

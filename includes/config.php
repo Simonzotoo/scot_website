@@ -58,6 +58,23 @@ define('BASE_URL', env('APP_BASE_URL') ?? detect_base_url());
 require_once __DIR__ . '/security_headers.php';
 apply_security_headers();
 
+/**
+ * Absolute production URL, no trailing slash — needed anywhere a relative
+ * path won't do (sitemap.xml, canonical link, Open Graph tags). Falls back
+ * to reconstructing it from the current request so nothing breaks before
+ * SITE_URL is set in .env; set it explicitly in production for a stable
+ * canonical host regardless of how the request arrived.
+ */
+define('SITE_URL', rtrim((string) env('SITE_URL', ''), '/') ?: (static function (): string {
+    if (empty($_SERVER['HTTP_HOST'])) {
+        return '';
+    }
+    $scheme = is_request_secure() ? 'https' : 'http';
+    return $scheme . '://' . $_SERVER['HTTP_HOST'] . BASE_URL;
+})());
+
+define('GA_MEASUREMENT_ID', env('GA_MEASUREMENT_ID', ''));
+
 require_once __DIR__ . '/images.php';
 require_once __DIR__ . '/icons.php';
 require_once __DIR__ . '/avatars.php';

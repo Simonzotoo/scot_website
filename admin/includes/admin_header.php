@@ -23,6 +23,14 @@ const ADMIN_NAV_ITEMS = [
 $admin = require_admin_login();
 $activeNav = $activeNav ?? '';
 $pageTitle = $pageTitle ?? 'Admin';
+
+/** First letter of up to the first two words of a name, e.g. "SCOT Admin" -> "SA". */
+function admin_initials(string $name): string
+{
+    $words = preg_split('/\s+/', trim($name), -1, PREG_SPLIT_NO_EMPTY);
+    $initials = array_map(static fn (string $w) => mb_strtoupper(mb_substr($w, 0, 1)), array_slice($words, 0, 2));
+    return implode('', $initials) ?: '?';
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -37,7 +45,10 @@ $pageTitle = $pageTitle ?? 'Admin';
 <body class="admin-body">
 <div class="admin-shell">
     <aside class="admin-sidebar">
-        <a href="<?= BASE_URL ?>/admin/index.php" class="admin-brand">SCOT <span>Admin</span></a>
+        <a href="<?= BASE_URL ?>/admin/index.php" class="admin-brand">
+            <img src="<?= IMAGES_URL ?>/logo/scot-logo-dark.png" alt="SCOT — School of Computing and Technology">
+            <span class="gold-line"></span>
+        </a>
         <nav class="admin-nav">
             <?php foreach (ADMIN_NAV_ITEMS as $key => [$href, $label]): ?>
             <a href="<?= BASE_URL ?>/admin/<?= $href ?>" class="admin-nav-link <?= $activeNav === $key ? 'active' : '' ?>"><?= e($label) ?></a>
@@ -52,7 +63,10 @@ $pageTitle = $pageTitle ?? 'Admin';
     <div class="admin-main">
         <header class="admin-topbar">
             <h1><?= e($pageTitle) ?></h1>
-            <span class="admin-topbar-user"><?= e($admin['name']) ?></span>
+            <div class="admin-topbar-right">
+                <span class="admin-topbar-user"><?= e($admin['name']) ?></span>
+                <div class="admin-avatar"><?= e(admin_initials($admin['name'])) ?></div>
+            </div>
         </header>
 
         <main class="admin-content">

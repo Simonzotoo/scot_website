@@ -95,12 +95,12 @@ require __DIR__ . '/includes/admin_header.php';
     <h2>Categories (filter tab order)</h2>
     <div style="display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem;">
         <?php foreach ($categories as $c): ?>
-        <form method="post" style="display:flex; align-items:center; gap:.35rem; background:#f1f5f9; border-radius:999px; padding:.3rem .3rem .3rem .8rem;">
+        <form method="post" data-confirm="Remove this category tab?" data-confirm-label="Remove" style="display:flex; align-items:center; gap:.35rem; background:#f1f5f9; border-radius:999px; padding:.3rem .3rem .3rem .8rem;">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete_category">
             <input type="hidden" name="id" value="<?= $c['id'] ?>">
             <span style="font-size:.8rem; font-weight:700;"><?= e($c['name']) ?></span>
-            <button type="submit" class="admin-repeater-remove" style="width:1.6rem; height:1.6rem;" onclick="return confirm('Remove this category tab?');">&times;</button>
+            <button type="submit" class="admin-repeater-remove" style="width:1.6rem; height:1.6rem;">&times;</button>
         </form>
         <?php endforeach; ?>
     </div>
@@ -170,7 +170,7 @@ require __DIR__ . '/includes/admin_header.php';
             <td><?= (int) $ph['sort_order'] ?></td>
             <td class="admin-table-actions">
                 <a class="admin-btn admin-btn-sm admin-btn-secondary" href="?edit=<?= $ph['id'] ?>">Edit</a>
-                <form method="post" onsubmit="return confirm('Delete this photo?');">
+                <form method="post" data-confirm="Delete this photo?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete_photo">
                     <input type="hidden" name="id" value="<?= $ph['id'] ?>">

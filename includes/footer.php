@@ -46,10 +46,7 @@ require_once __DIR__ . '/config.php';
                     foreach ($socials as [$name, $url, $path, $solid]):
                     ?>
                     <a href="<?= $url ?>" target="_blank" rel="noopener"
-                       class="grid h-9 w-9 place-items-center rounded-lg border transition-all duration-200 hover:scale-110"
-                       style="background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.15); color:rgba(191,219,254,.65);"
-                       onmouseover="this.style.borderColor='rgba(212,175,55,.5)'; this.style.color='#D4AF37'; this.style.background='rgba(212,175,55,.08)';"
-                       onmouseout="this.style.borderColor='rgba(255,255,255,.15)'; this.style.color='rgba(191,219,254,.65)'; this.style.background='rgba(255,255,255,.06)';"
+                       class="social-icon-link grid h-9 w-9 place-items-center rounded-lg border transition-all duration-200 hover:scale-110"
                        aria-label="<?= $name ?>">
                         <?php if ($solid): ?>
                         <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -131,6 +128,16 @@ require_once __DIR__ . '/config.php';
     </div>
 </footer>
 
+<div id="cookie-consent" role="dialog" aria-live="polite" aria-label="Cookie notice">
+    <p>We use essential cookies to run this site, and — only if you accept — analytics cookies to understand how it's used. No tracking happens unless you choose Accept.</p>
+    <div class="cookie-actions">
+        <button type="button" class="cookie-decline">Decline</button>
+        <button type="button" class="cookie-accept">Accept</button>
+    </div>
+</div>
+
+<script src="<?= BASE_URL ?>/assets/js/loading-bar.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/consent.js"></script>
 <script src="<?= BASE_URL ?>/assets/js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /database/
+Disallow: /uploads/
+Allow: /
+
+Sitemap: https://scotwiuc.com/sitemap.xml

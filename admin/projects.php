@@ -142,11 +142,11 @@ require __DIR__ . '/includes/admin_header.php';
                 <?php foreach (($editStack ?: ['']) as $tech): ?>
                 <div class="admin-repeater-row">
                     <input class="admin-input" type="text" name="stack[]" value="<?= e($tech) ?>">
-                    <button type="button" class="admin-repeater-remove" onclick="this.parentElement.remove()">&times;</button>
+                    <button type="button" class="admin-repeater-remove" data-remove-row>&times;</button>
                 </div>
                 <?php endforeach; ?>
             </div>
-            <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" onclick="addStackRow()">+ Add Tag</button>
+            <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" data-add-stack-row>+ Add Tag</button>
         </div>
         <div class="admin-form-row">
             <label>Sort Order</label>
@@ -179,7 +179,7 @@ require __DIR__ . '/includes/admin_header.php';
             <td><span class="admin-badge admin-badge-<?= e($p['status']) ?>"><?= e($p['status']) ?></span></td>
             <td class="admin-table-actions">
                 <a class="admin-btn admin-btn-sm admin-btn-secondary" href="?edit=<?= $p['id'] ?>">Edit</a>
-                <form method="post" onsubmit="return confirm('Delete this project?');">
+                <form method="post" data-confirm="Delete this project?">
                     <?= csrf_field() ?>
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?= $p['id'] ?>">
@@ -191,17 +191,5 @@ require __DIR__ . '/includes/admin_header.php';
         </tbody>
     </table>
 </div>
-
-<script>
-function addStackRow() {
-    const wrap = document.querySelector('[data-repeater="stack"] .admin-repeater-list');
-    const row = document.createElement('div');
-    row.className = 'admin-repeater-row';
-    row.innerHTML = '<input class="admin-input" type="text" name="stack[]" value="">' +
-        '<button type="button" class="admin-repeater-remove" onclick="this.parentElement.remove()">&times;</button>';
-    wrap.appendChild(row);
-    row.querySelector('input').focus();
-}
-</script>
 
 <?php require __DIR__ . '/includes/admin_footer.php'; ?>
