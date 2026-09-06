@@ -129,7 +129,7 @@ require_once __DIR__ . '/config.php';
 </footer>
 
 <div id="cookie-consent" role="dialog" aria-live="polite" aria-label="Cookie notice">
-    <p>We use essential cookies to run this site, and — only if you accept — analytics cookies to understand how it's used. No tracking happens unless you choose Accept.</p>
+    <p>We use cookies to run this site and, only with your consent, to understand how it's used.</p>
     <div class="cookie-actions">
         <button type="button" class="cookie-decline">Decline</button>
         <button type="button" class="cookie-accept">Accept</button>
