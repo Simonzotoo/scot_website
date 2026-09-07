@@ -458,6 +458,7 @@ try {
         'social_x' => 'https://twitter.com/WIUCGHANA',
         'social_linkedin' => 'https://www.linkedin.com/school/wiucghana/',
         'footer_tagline' => 'The School of Computing and Technology at Wisconsin International University College (WIUC), Accra — home to our undergraduate, diploma, and postgraduate programmes, faculty, and student community.',
+        'apply_now_url' => '#',
     ];
     $setStmt = $pdo->prepare('INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?)');
     foreach ($settings as $k => $v) {
