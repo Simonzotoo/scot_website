@@ -79,6 +79,36 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ═══════════════════════════════════════════════════════════
+     ELIGIBILITY — admission requirements, shown before the
+     programme listing so applicants know if they qualify first.
+════════════════════════════════════════════════════════════ -->
+<section id="eligibility" class="section-tint py-20 scroll-mt-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12 fade-in">
+        <span class="eyebrow">Admission Requirements</span>
+        <div class="gold-line mt-3 mx-auto mb-4"></div>
+        <h2 class="font-heading font-black text-3xl text-ink sm:text-4xl">Eligibility</h2>
+        <p class="text-slate-500 text-sm max-w-md mx-auto mt-3 leading-7">
+            What you need to qualify for admission into our programmes.
+        </p>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-1 lg:grid-cols-3 fade-in fade-in-delay-2">
+        <?php foreach ([
+            [$setting('eligibility_wassce_title'), $setting('eligibility_wassce_body')],
+            [$setting('eligibility_mature_title'), $setting('eligibility_mature_body')],
+            [$setting('eligibility_others_title'), $setting('eligibility_others_body')],
+        ] as [$title, $body]): ?>
+        <div class="card-hover rounded-xl border border-slate-200 bg-white p-6 border-l-4 border-l-scotsaBlue">
+            <h3 class="font-heading font-bold text-scotsaBlue"><?= e($title) ?></h3>
+            <p class="mt-2 text-sm leading-7 text-slate-500 whitespace-pre-line"><?= e($body) ?></p>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
      PROGRAMMES
 ════════════════════════════════════════════════════════════ -->
 <section id="programmes" class="section-plain py-20 scroll-mt-20">
