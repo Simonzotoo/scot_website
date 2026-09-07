@@ -356,7 +356,7 @@ try {
                 'Agor, A. D., Kwesi Oberko, P. S., Dotse, S. K., Partey, B. T., Aboagye-Darko, D., & Tapany, E. J. (2026). A descriptive systematic review of contemporary MANET security research: themes, design structures, and reporting rigor. Future Technology, 5(2), 69–80.',
                 'Agor, A. D., Banaseka, F. K., Oberko, P. S. K., Banning, L. A., Dotse, S. K., & Tapany, E. J. (2026). A systematic review of metaheuristic–metaheuristic (MH–MH) hybridizations for optimization. Journal of Computer Science, 22(2), 660–678. DOI: 10.3844/jcssp.2026.660.678.',
             ],
-            'education' => ['PhD Computer Science, 2025–Present','MPhil Computer Science, 2019–2021','BSc Computer Science, 2014–2018'],
+            'education' => ['PhD Computer Science, Ghana Communication Technology University (Ongoing)','MPhil Computer Science, University of Energy & Natural Resources','BSc Computer Science, University of Energy & Natural Resources'],
         ],
         [
             'role' => 'Lecturer', 'name' => 'Ruth Oteng', 'portfolio' => null, 'bio' => null,
