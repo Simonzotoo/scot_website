@@ -17,6 +17,7 @@ const ADMIN_NAV_ITEMS = [
     'projects'   => ['projects.php', 'Student Projects'],
     'blog'       => ['blog.php', 'Blog'],
     'gallery'    => ['gallery.php', 'Gallery'],
+    'documents'  => ['documents.php', 'Documents'],
     'settings'   => ['settings.php', 'Site Settings'],
 ];
 

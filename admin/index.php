@@ -15,6 +15,7 @@ $tiles = [
     'projects'   => ['projects.php', 'Student Projects', 'SELECT COUNT(*) FROM student_projects'],
     'blog'       => ['blog.php', 'Blog Posts', 'SELECT COUNT(*) FROM blog_posts'],
     'gallery'    => ['gallery.php', 'Gallery Photos', 'SELECT COUNT(*) FROM gallery_items'],
+    'documents'  => ['documents.php', 'Documents', 'SELECT COUNT(*) FROM documents'],
 ];
 foreach ($tiles as $key => [$href, $label, $sql]) {
     $counts[$key] = (int) db()->query($sql)->fetchColumn();

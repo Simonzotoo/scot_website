@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebarBackdrop.addEventListener('click', closeSidebar);
         sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', closeSidebar));
         window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) closeSidebar();
+            if (window.innerWidth >= 1280) closeSidebar();
         });
     }
 
