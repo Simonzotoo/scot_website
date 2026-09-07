@@ -336,6 +336,27 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     border-color: rgba(212,175,55,.35) !important;
 }
 
+/* Mobile nav hamburger — opens #sidebar (assets/js/main.js "OFF-CANVAS
+   SIDEBAR"). Same footprint as .theme-toggle for a consistent header row.
+   display/place-items deliberately left to Tailwind utilities on the
+   element itself (not set here) so lg:hidden — same specificity, but
+   defined earlier in the cascade (tailwind.css loads before styles.css) —
+   isn't silently overridden back to visible by a same-specificity rule
+   that appears later in source order. */
+.nav-toggle {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.6rem;
+    border: 1.5px solid var(--border-soft);
+    background: transparent;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease;
+    color: var(--text-secondary);
+}
+.nav-toggle:hover { background: var(--bg-subtle); border-color: rgba(10,31,68,.20); color: var(--royal); }
+[data-theme="dark"] .nav-toggle { border-color: rgba(255,255,255,.12) !important; color: rgba(226,232,240,.65) !important; }
+[data-theme="dark"] .nav-toggle:hover { background: rgba(255,255,255,.08) !important; color: #fff !important; }
+
 /* Mobile menu slide animation */
 [data-mobile-menu] {
     overflow: hidden;

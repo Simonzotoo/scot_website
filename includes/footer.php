@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/nav.php';
 ?>
 </main>
 
@@ -66,22 +67,8 @@ require_once __DIR__ . '/config.php';
             <div>
                 <h3 class="font-heading font-bold text-xs tracking-widest uppercase mb-5" style="color:#D4AF37;">Explore</h3>
                 <div class="grid gap-2.5 text-sm" style="color:rgba(191,219,254,.65);">
-                    <?php
-                    $links = [
-                        ['Home',       BASE_URL . '/index.php'],
-                        ['About',      BASE_URL . '/index.php#about'],
-                        ['Programmes', BASE_URL . '/index.php#programmes'],
-                        ['Facilities', BASE_URL . '/index.php#facilities'],
-                        ['Watch',      BASE_URL . '/index.php#watch'],
-                        ['Faculty',    BASE_URL . '/index.php#faculty'],
-                        ['Projects',   BASE_URL . '/index.php#projects'],
-                        ['Blog',       BASE_URL . '/index.php#blog'],
-                        ['Gallery',    BASE_URL . '/index.php#gallery'],
-                        ['Contact',    BASE_URL . '/index.php#contact'],
-                    ];
-                    foreach ($links as [$label, $href]):
-                    ?>
-                    <a href="<?= $href ?>" class="footer-link hover:text-white transition-colors duration-150"><?= $label ?></a>
+                    <?php foreach (NAV_ITEMS as $key => [$href, $label]): ?>
+                    <a href="<?= BASE_URL ?>/<?= $href ?>" class="footer-link hover:text-white transition-colors duration-150"><?= e($label) ?></a>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -109,7 +96,7 @@ require_once __DIR__ . '/config.php';
                         <span class="leading-6">No. 23 Akoto Bamfo Street, North Legon, Accra<br>
                         <span style="color:rgba(191,219,254,.45);">Wisconsin International University College, Ghana</span></span>
                     </p>
-                    <a href="#contact"
+                    <a href="<?= BASE_URL ?>/contact.php"
                        class="mt-1 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold text-white transition-all duration-200 hover:bg-white/10 w-fit"
                        style="border:1px solid rgba(255,255,255,.22);">
                         Get in touch

@@ -9,6 +9,9 @@ const SETTINGS_FIELDS = [
     'Site' => [
         ['site_meta_title', 'Page Title', 'text'],
     ],
+    'Admissions' => [
+        ['apply_now_url', 'Apply Now Button Link', 'text'],
+    ],
     'About Section' => [
         ['about_paragraph_1', 'Paragraph 1', 'textarea'],
         ['about_paragraph_2', 'Paragraph 2', 'textarea'],
