@@ -82,7 +82,7 @@ require_once __DIR__ . '/includes/header.php';
      ELIGIBILITY — admission requirements, shown before the
      programme listing so applicants know if they qualify first.
 ════════════════════════════════════════════════════════════ -->
-<section id="eligibility" class="section-tint py-20 scroll-mt-20">
+<section id="eligibility" class="section-gold py-20 scroll-mt-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12 fade-in">
         <span class="eyebrow">Admission Requirements</span>

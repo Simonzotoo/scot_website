@@ -114,7 +114,7 @@ require_once __DIR__ . '/includes/header.php';
 <!-- ═══════════════════════════════════════════════════════════
      A MESSAGE FROM THE DEAN
 ════════════════════════════════════════════════════════════ -->
-<section class="section-plain py-20">
+<section class="section-navy py-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] items-center">
         <div class="fade-in">
