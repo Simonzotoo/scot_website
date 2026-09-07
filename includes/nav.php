@@ -10,7 +10,6 @@ declare(strict_types=1);
 const NAV_ITEMS = [
     'home'       => ['index.php', 'Home'],
     'programmes' => ['programmes.php', 'Programmes'],
-    'facilities' => ['facilities.php', 'Facilities'],
     'watch'      => ['watch.php', 'Watch'],
     'faculty'    => ['faculty.php', 'Faculty'],
     'projects'   => ['projects.php', 'Projects'],
