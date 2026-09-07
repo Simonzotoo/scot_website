@@ -31,7 +31,7 @@ require_once __DIR__ . '/nav.php';
                     </div>
                 </a>
 
-                <p class="mt-5 max-w-sm text-sm leading-7" style="color:rgba(191,219,254,.70);">
+                <p class="mt-5 max-w-sm text-sm leading-7 text-justify" style="color:rgba(191,219,254,.70);">
                     The School of Computing and Technology at Wisconsin International University College (WIUC), Accra &mdash; home to our undergraduate, diploma, and postgraduate programmes, faculty, and student community.
                 </p>
 

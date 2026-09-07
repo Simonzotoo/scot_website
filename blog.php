@@ -51,7 +51,7 @@ require_once __DIR__ . '/includes/header.php';
                     <?= e(date('F j, Y', strtotime($post['date']))) ?>
                 </p>
                 <h3 class="font-heading font-black text-2xl text-ink leading-snug mb-4"><?= e($post['title']) ?></h3>
-                <p class="text-sm leading-7 text-slate-600 whitespace-pre-line"><?= e($post['excerpt']) ?></p>
+                <p class="text-sm leading-7 text-slate-600 whitespace-pre-line text-justify"><?= e($post['excerpt']) ?></p>
             </div>
             <?php if (!empty($post['video'])): ?>
             <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200" style="aspect-ratio:16/9;">

@@ -45,7 +45,7 @@ require_once __DIR__ . '/includes/header.php';
                 </video>
             </div>
             <p class="mt-4 font-heading font-bold text-lg text-ink"><?= e($vid['title']) ?></p>
-            <p class="mt-1 text-sm leading-6 text-slate-500"><?= e($vid['caption']) ?></p>
+            <p class="mt-1 text-sm leading-6 text-slate-500 text-justify"><?= e($vid['caption']) ?></p>
         </div>
         <?php endforeach; ?>
     </div>

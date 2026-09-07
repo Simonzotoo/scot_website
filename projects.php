@@ -56,7 +56,7 @@ require_once __DIR__ . '/includes/header.php';
                 Supervised by <?= e($project['supervisor']) ?>
                 <?php if (!empty($project['coSupervisor'])): ?> &amp; <?= e($project['coSupervisor']) ?><?php endif; ?>
             </p>
-            <p class="mt-5 text-sm leading-7 text-slate-600 whitespace-pre-line"><?= e($project['summary']) ?></p>
+            <p class="mt-5 text-sm leading-7 text-slate-600 whitespace-pre-line text-justify"><?= e($project['summary']) ?></p>
             <div class="mt-7 flex flex-wrap gap-2.5">
                 <?php foreach ($project['stack'] as $tech): ?>
                 <span class="rounded-full border border-slate-200 px-3.5 py-1.5 text-sm font-semibold text-slate-600"><?= e($tech) ?></span>

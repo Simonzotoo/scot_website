@@ -62,7 +62,7 @@ require_once __DIR__ . '/includes/header.php';
                 <?= e($heroSlides[0]['headline']) ?>
             </h1>
 
-            <p id="hero-subtext" class="mt-6 max-w-xl text-base leading-8" style="color:rgba(191,219,254,.78);">
+            <p id="hero-subtext" class="mt-6 max-w-xl text-base leading-8 text-justify" style="color:rgba(191,219,254,.78);">
                 <?= e($heroSlides[0]['subtext']) ?>
             </p>
 
@@ -129,7 +129,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="fade-in fade-in-delay-2">
             <span class="eyebrow" style="font-size:1.125rem; letter-spacing:.08em;">A Message From the Dean</span>
             <div class="gold-line mt-3 mb-6"></div>
-            <blockquote class="text-lg sm:text-xl leading-9 text-ink font-medium">
+            <blockquote class="text-lg sm:text-xl leading-9 text-ink font-medium text-justify">
                 &ldquo;<?= e($setting('dean_message')) ?>&rdquo;
             </blockquote>
             <div class="mt-7 flex items-center gap-4">
@@ -156,10 +156,10 @@ require_once __DIR__ . '/includes/header.php';
             <h2 class="font-heading font-black text-3xl text-ink sm:text-4xl leading-tight">
                 The School of<br>Computing and Technology.
             </h2>
-            <p class="mt-5 text-slate-500 leading-8 text-sm">
+            <p class="mt-5 text-slate-500 leading-8 text-sm text-justify">
                 <?= e($setting('about_paragraph_1')) ?>
             </p>
-            <p class="mt-4 text-slate-500 leading-8 text-sm">
+            <p class="mt-4 text-slate-500 leading-8 text-sm text-justify">
                 <?= e($setting('about_paragraph_2')) ?>
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
@@ -176,7 +176,7 @@ require_once __DIR__ . '/includes/header.php';
             ] as [$title, $body]): ?>
             <div class="card-hover rounded-xl border border-slate-200 bg-white p-5 border-l-4 border-l-scotsaBlue">
                 <h3 class="font-heading font-bold text-scotsaBlue"><?= e($title) ?></h3>
-                <p class="mt-1.5 text-sm leading-6 text-slate-500"><?= e($body) ?></p>
+                <p class="mt-1.5 text-sm leading-6 text-slate-500 text-justify"><?= e($body) ?></p>
             </div>
             <?php endforeach; ?>
         </div>
