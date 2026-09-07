@@ -3,9 +3,11 @@ require_once __DIR__ . '/includes/db.php';
 $pdo = db();
 
 $documents = array_map(static fn (array $r) => [
-    'title'     => $r['title'],
-    'file'      => $r['file_path'],
-    'size'      => (int) $r['file_size'],
+    'title'    => $r['title'],
+    'audience' => $r['audience'],
+    'file'     => $r['file_path'],
+    'preview'  => $r['preview_path'],
+    'size'     => (int) $r['file_size'],
 ], $pdo->query("SELECT * FROM documents WHERE status='active' ORDER BY sort_order")->fetchAll());
 
 function scot_format_bytes(int $bytes): string
@@ -26,7 +28,7 @@ require_once __DIR__ . '/includes/header.php';
      department documents students need direct access to.
 ════════════════════════════════════════════════════════════ -->
 <section id="downloads" class="section-plain py-20 scroll-mt-20">
-    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12 fade-in">
         <span class="eyebrow">Student Resources</span>
         <div class="gold-line mt-3 mx-auto mb-4"></div>
@@ -37,20 +39,33 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
     <?php if ($documents): ?>
-    <div class="grid gap-4 sm:grid-cols-2">
-        <?php foreach ($documents as $i => $doc): ?>
-        <a href="<?= BASE_URL ?>/assets/<?= e($doc['file']) ?>" download class="contact-card group fade-in fade-in-delay-<?= ($i % 3) + 1 ?>">
-            <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
-                <?= icon('document', 'h-6 w-6') ?>
-            </div>
-            <div class="min-w-0 flex-1">
-                <p class="font-heading font-bold text-ink text-sm"><?= e($doc['title']) ?></p>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <?php foreach ($documents as $i => $doc):
+            $fileUrl = BASE_URL . '/assets/' . $doc['file'];
+            $previewUrl = $doc['preview'] ? BASE_URL . '/assets/' . $doc['preview'] : null;
+        ?>
+        <div class="document-card fade-in fade-in-delay-<?= ($i % 3) + 1 ?>">
+            <a href="<?= e($fileUrl) ?>" target="_blank" rel="noopener" class="document-card-preview" aria-label="Preview <?= e($doc['title']) ?>">
+                <?php if ($previewUrl): ?>
+                <img src="<?= e($previewUrl) ?>" alt="Preview of <?= e($doc['title']) ?>" loading="lazy">
+                <?php else: ?>
+                <div class="document-card-fallback"><?= icon('document', 'h-10 w-10') ?></div>
+                <?php endif; ?>
+                <span class="document-card-preview-label">
+                    <?= icon('eye', 'h-3.5 w-3.5') ?>
+                    Preview
+                </span>
+            </a>
+            <div class="document-card-body">
+                <span class="audience-badge"><?= e($doc['audience']) ?></span>
+                <p class="font-heading font-bold text-ink text-sm mt-2.5 leading-snug"><?= e($doc['title']) ?></p>
                 <p class="text-xs font-semibold mt-1 text-slate-400">PDF &middot; <?= e(scot_format_bytes($doc['size'])) ?></p>
+                <a href="<?= e($fileUrl) ?>" download class="document-card-download">
+                    <?= icon('arrow-down-tray', 'h-4 w-4') ?>
+                    Download
+                </a>
             </div>
-            <div class="flex-shrink-0 text-scotsaBlue transition-transform duration-200 group-hover:translate-y-0.5">
-                <?= icon('arrow-down-tray', 'h-5 w-5') ?>
-            </div>
-        </a>
+        </div>
         <?php endforeach; ?>
     </div>
     <?php else: ?>

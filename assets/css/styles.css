@@ -1004,6 +1004,90 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 }
 
 /* ═══════════════════════════════════════════════════════════
+   DOWNLOADS — document cards with a real PDF page-1 preview
+   thumbnail instead of a generic file icon.
+════════════════════════════════════════════════════════════ */
+.document-card {
+    background: white;
+    border: 1.5px solid rgb(226 232 240);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+.document-card:hover { border-color: rgba(10,31,68,.28); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+[data-theme="dark"] .document-card { background: var(--bg-surface) !important; border-color: var(--border-soft) !important; }
+
+.document-card-preview {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    background: var(--bg-muted);
+    overflow: hidden;
+}
+[data-theme="dark"] .document-card-preview { background: rgba(255,255,255,.04) !important; }
+.document-card-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 380ms var(--ease-out);
+}
+.document-card:hover .document-card-preview img { transform: scale(1.04); }
+.document-card-fallback {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+}
+.document-card-preview-label {
+    position: absolute;
+    left: .65rem; bottom: .65rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .65rem;
+    border-radius: 999px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .7rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(10,31,68,.75);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 220ms ease, transform 220ms ease;
+}
+.document-card:hover .document-card-preview-label { opacity: 1; transform: translateY(0); }
+
+.document-card-body { padding: 1.1rem 1.25rem 1.25rem; }
+.audience-badge {
+    display: inline-block;
+    padding: .2rem .6rem;
+    border-radius: 999px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    background: rgba(10,31,68,.08);
+    color: var(--royal);
+}
+[data-theme="dark"] .audience-badge { background: rgba(212,175,55,.14) !important; color: var(--gold) !important; }
+
+.document-card-download {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: .85rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--royal);
+    text-decoration: none;
+}
+.document-card-download:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════════
    ADMIN SIDEBAR
 ════════════════════════════════════════════════════════════ */
 .admin-link {

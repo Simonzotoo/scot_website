@@ -195,7 +195,7 @@ function handle_video_upload(array $file, string $subfolder, string $posterSubfo
         }
         chmod($destPath, 0644);
         return [
-            'path'      => trim($subfolder, '/') . '/' . $basename . '.mp4',
+            'path'      => 'videos/' . trim($subfolder, '/') . '/' . $basename . '.mp4',
             'poster'    => null,
             'optimized' => false,
         ];
@@ -220,7 +220,7 @@ function handle_video_upload(array $file, string $subfolder, string $posterSubfo
         }
         chmod($destPath, 0644);
         return [
-            'path'      => trim($subfolder, '/') . '/' . basename($destPath),
+            'path'      => 'videos/' . trim($subfolder, '/') . '/' . basename($destPath),
             'poster'    => null,
             'optimized' => false,
         ];
@@ -242,7 +242,7 @@ function handle_video_upload(array $file, string $subfolder, string $posterSubfo
     }
 
     return [
-        'path'      => trim($subfolder, '/') . '/' . $basename . '.mp4',
+        'path'      => 'videos/' . trim($subfolder, '/') . '/' . $basename . '.mp4',
         'poster'    => $posterRelative,
         'optimized' => true,
     ];
@@ -253,15 +253,25 @@ function handle_video_upload(array $file, string $subfolder, string $posterSubfo
  * relative path, as saved in the DB. Used when replacing or removing a
  * record's media. Silently no-ops if the file is already gone.
  */
+/**
+ * Note on path conventions: handle_image_upload() returns paths relative
+ * to assets/images/ (e.g. "hero/xxx.jpg", no "images/" prefix), so the
+ * 'images' root here is assets/images/. handle_video_upload() and
+ * handle_document_upload() instead return paths that already include
+ * their own type segment (e.g. "videos/watch/xxx.mp4",
+ * "documents/xxx.pdf") to match how they're displayed elsewhere
+ * (BASE_URL . '/assets/' . $path) — so those roots are just assets/.
+ */
 function delete_media_file(?string $relativePath, string $baseDir = 'images'): void
 {
     if ($relativePath === null || $relativePath === '') {
         return;
     }
+    $assetsRoot = dirname(__DIR__) . '/assets/';
     $roots = [
-        'videos'    => dirname(__DIR__) . '/assets/videos/',
-        'documents' => dirname(__DIR__) . '/assets/documents/',
-        'images'    => dirname(__DIR__) . '/assets/images/',
+        'videos'    => $assetsRoot,
+        'documents' => $assetsRoot,
+        'images'    => $assetsRoot . 'images/',
     ];
     $root = $roots[$baseDir] ?? $roots['images'];
     $full = $root . ltrim($relativePath, '/');
@@ -273,12 +283,47 @@ function delete_media_file(?string $relativePath, string $baseDir = 'images'): v
 const UPLOAD_MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 
 /**
+ * Locates the pdftoppm binary (part of poppler-utils) used to render a
+ * document preview thumbnail. Same resolve-once/gracefully-absent pattern
+ * as find_ffmpeg_binary() — production hosts vary on whether this is
+ * installed, so preview generation must degrade to "no preview" rather
+ * than fail the whole upload.
+ */
+function find_pdftoppm_binary(): ?string
+{
+    static $resolved = null;
+    static $checked = false;
+    if ($checked) {
+        return $resolved;
+    }
+    $checked = true;
+
+    $candidates = ['/usr/bin/pdftoppm', '/usr/local/bin/pdftoppm', '/opt/homebrew/bin/pdftoppm'];
+    $which = @shell_exec('command -v pdftoppm 2>/dev/null');
+    if (is_string($which) && trim($which) !== '') {
+        array_unshift($candidates, trim($which));
+    }
+    foreach ($candidates as $path) {
+        if (is_executable($path)) {
+            $resolved = $path;
+            return $resolved;
+        }
+    }
+    return null;
+}
+
+/**
  * Downloadable documents (academic calendar, timetables, etc.) — no
- * image/video processing needed, just MIME-sniff validation and a move
- * into assets/documents/ under a random filename (never the visitor's
- * original filename, same reasoning as handle_image_upload).
+ * image processing needed on the document itself, just MIME-sniff
+ * validation and a move into assets/documents/ under a random filename
+ * (never the visitor's original filename, same reasoning as
+ * handle_image_upload). PDFs additionally get a page-1 thumbnail so the
+ * public Downloads page can show a real preview instead of a generic
+ * icon — silently skipped if pdftoppm isn't available, or for Word docs
+ * (no equivalent renderer here), same graceful-degradation approach as
+ * video transcoding.
  *
- * @return array{path: string, size: int}
+ * @return array{path: string, size: int, preview: ?string}
  */
 function handle_document_upload(array $file): array
 {
@@ -305,7 +350,8 @@ function handle_document_upload(array $file): array
         throw new UploadException('Could not create the destination folder.');
     }
 
-    $filename = bin2hex(random_bytes(8)) . '.' . $allowedExtensions[$mime];
+    $basename = bin2hex(random_bytes(8));
+    $filename = $basename . '.' . $allowedExtensions[$mime];
     $destPath = $destDir . '/' . $filename;
 
     if (!move_uploaded_file($file['tmp_name'], $destPath)) {
@@ -313,5 +359,29 @@ function handle_document_upload(array $file): array
     }
     chmod($destPath, 0644);
 
-    return ['path' => 'documents/' . $filename, 'size' => (int) filesize($destPath)];
+    $previewRelative = null;
+    if ($mime === 'application/pdf' && ($pdftoppm = find_pdftoppm_binary()) !== null) {
+        $previewDir = $destDir . '/previews';
+        if (is_dir($previewDir) || mkdir($previewDir, 0755, true)) {
+            $previewPrefix = $previewDir . '/' . $basename;
+            $cmd = sprintf(
+                '%s -jpeg -f 1 -l 1 -scale-to-x 600 -scale-to-y -1 -singlefile %s %s 2>&1',
+                escapeshellarg($pdftoppm),
+                escapeshellarg($destPath),
+                escapeshellarg($previewPrefix)
+            );
+            exec($cmd, $out, $exitCode);
+            $previewFile = $previewPrefix . '.jpg';
+            if ($exitCode === 0 && is_file($previewFile)) {
+                chmod($previewFile, 0644);
+                $previewRelative = 'documents/previews/' . $basename . '.jpg';
+            }
+        }
+    }
+
+    return [
+        'path'    => 'documents/' . $filename,
+        'size'    => (int) filesize($destPath),
+        'preview' => $previewRelative,
+    ];
 }
