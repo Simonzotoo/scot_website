@@ -30,6 +30,11 @@ const SETTINGS_FIELDS = [
         ['contact_phone', 'Phone', 'text'],
         ['contact_address', 'Campus Address', 'text'],
     ],
+    'Faculty Office' => [
+        ['faculty_office_email', 'Email', 'text'],
+        ['faculty_office_phone_1', 'Phone 1', 'text'],
+        ['faculty_office_phone_2', 'Phone 2', 'text'],
+    ],
     'Footer & Social' => [
         ['footer_tagline', 'Footer Tagline', 'textarea'],
         ['social_facebook', 'Facebook URL', 'text'],

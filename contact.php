@@ -49,6 +49,50 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </a>
     </div>
+
+    <?php if ($setting('faculty_office_email') || $setting('faculty_office_phone_1')): ?>
+    <div class="mt-14 text-center fade-in">
+        <span class="eyebrow">Faculty Office</span>
+        <div class="gold-line mt-3 mx-auto mb-8"></div>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <?php if ($setting('faculty_office_email')): ?>
+        <a href="mailto:<?= e($setting('faculty_office_email')) ?>" class="contact-card group fade-in">
+            <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
+                <?= icon('mail', 'h-6 w-6') ?>
+            </div>
+            <div class="min-w-0">
+                <p class="font-heading font-bold text-ink text-sm">Email</p>
+                <p class="text-xs font-semibold mt-1 text-scotsaBlue"><?= e($setting('faculty_office_email')) ?></p>
+            </div>
+        </a>
+        <?php endif; ?>
+
+        <?php if ($setting('faculty_office_phone_1')): ?>
+        <a href="tel:<?= e(preg_replace('/\s+/', '', $setting('faculty_office_phone_1'))) ?>" class="contact-card group fade-in fade-in-delay-1">
+            <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
+                <?= icon('phone', 'h-6 w-6') ?>
+            </div>
+            <div class="min-w-0">
+                <p class="font-heading font-bold text-ink text-sm">Phone</p>
+                <p class="text-xs font-semibold mt-1 text-scotsaBlue"><?= e($setting('faculty_office_phone_1')) ?></p>
+            </div>
+        </a>
+        <?php endif; ?>
+
+        <?php if ($setting('faculty_office_phone_2')): ?>
+        <a href="tel:<?= e(preg_replace('/\s+/', '', $setting('faculty_office_phone_2'))) ?>" class="contact-card group fade-in fade-in-delay-2">
+            <div class="social-icon flex-shrink-0" style="background:rgba(10,31,68,.08); color:#0A1F44;">
+                <?= icon('phone', 'h-6 w-6') ?>
+            </div>
+            <div class="min-w-0">
+                <p class="font-heading font-bold text-ink text-sm">Phone</p>
+                <p class="text-xs font-semibold mt-1 text-scotsaBlue"><?= e($setting('faculty_office_phone_2')) ?></p>
+            </div>
+        </a>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
     </div>
 </section>
 
