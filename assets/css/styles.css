@@ -483,6 +483,38 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
     background-color: #0b1120;
 }
 
+/* Navy full-bleed section — a "spotlight" band using the same brand
+   navy as the hero, for the occasional section that should stand out
+   rather than just alternate white/tint. Only the specific text
+   colors actually used inside these sections are overridden (dark
+   ink/slate wouldn't read on navy); card components that already sit
+   on their own white background inside a section are untouched, since
+   their text renders against that white, not the navy behind it. */
+.section-navy {
+    background-color: var(--royal);
+}
+[data-theme="dark"] .section-navy {
+    background-color: var(--royal-deep);
+}
+.section-navy .text-ink { color: #fff !important; }
+.section-navy p.text-slate-500,
+.section-navy .text-slate-500:not(.card-hover *) { color: rgba(191,219,254,.75) !important; }
+
+/* Gold full-bleed section — same idea, using the brand gold. Dark ink
+   text already has strong contrast on gold (unlike white text, which
+   is why .eyebrow's default gold-on-white text needs the opposite fix
+   here: navy, not gold-on-gold). */
+.section-gold {
+    background-color: var(--gold);
+}
+[data-theme="dark"] .section-gold {
+    background-color: #8f7326;
+}
+.section-gold .eyebrow { color: var(--royal) !important; }
+.section-gold .gold-line { background: var(--royal) !important; }
+.section-gold p.text-slate-500,
+.section-gold .text-slate-500:not(.card-hover *) { color: rgba(15,23,42,.72) !important; }
+
 /* ═══════════════════════════════════════════════════════════
    CARDS
 ════════════════════════════════════════════════════════════ */
@@ -601,7 +633,8 @@ body.page-entering { animation: pageEnter 380ms var(--ease-out) forwards; }
 /* On a dark background (hero photo, dark-mode surfaces) the full-brightness
    brand gold already clears WCAG AA comfortably — use it there instead. */
 [data-theme="dark"] .eyebrow,
-.hero-grid .eyebrow {
+.hero-grid .eyebrow,
+.section-navy .eyebrow {
     color: var(--gold);
 }
 
