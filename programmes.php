@@ -101,7 +101,7 @@ require_once __DIR__ . '/includes/header.php';
         ] as [$title, $body]): ?>
         <div class="card-hover rounded-xl border border-slate-200 bg-white p-6 border-l-4 border-l-scotsaBlue">
             <h3 class="font-heading font-bold text-scotsaBlue"><?= e($title) ?></h3>
-            <p class="mt-2 text-sm leading-7 text-slate-500 whitespace-pre-line"><?= e($body) ?></p>
+            <p class="mt-2 text-sm leading-7 text-slate-500 whitespace-pre-line text-justify"><?= e($body) ?></p>
         </div>
         <?php endforeach; ?>
     </div>
@@ -150,7 +150,7 @@ require_once __DIR__ . '/includes/header.php';
                 data-programme-category="<?= e($prog['tag']) ?>">
             <span class="prog-kicker"><?= e($prog['tag']) ?></span>
             <h4 class="font-heading font-bold text-ink leading-snug mt-2 <?= $isFeatured ? 'text-xl' : '' ?>"><?= e($prog['name']) ?></h4>
-            <p class="mt-2 text-sm leading-6 text-slate-500"><?= e($prog['desc']) ?></p>
+            <p class="mt-2 text-sm leading-6 text-slate-500 text-justify"><?= e($prog['desc']) ?></p>
             <?php if ($isFeatured): ?>
             <div class="mt-5 pt-5 border-t border-slate-100 flex items-center gap-2 text-xs font-semibold text-slate-500">
                 <?= icon('academic-cap', 'h-4 w-4 text-scotsaBlue') ?>
@@ -207,7 +207,7 @@ require_once __DIR__ . '/includes/header.php';
                 data-programme-category="<?= e($prog['tag']) ?>">
             <span class="prog-kicker"><?= e($prog['tag']) ?></span>
             <h4 class="font-heading font-bold text-ink leading-snug mt-2"><?= e($prog['name']) ?></h4>
-            <p class="mt-2 text-sm leading-6 text-slate-500"><?= e($prog['desc']) ?></p>
+            <p class="mt-2 text-sm leading-6 text-slate-500 text-justify"><?= e($prog['desc']) ?></p>
             <span class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-scotsaBlue">
                 View Course Structure
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -250,7 +250,7 @@ require_once __DIR__ . '/includes/header.php';
                 data-programme-category="<?= e($prog['tag']) ?>">
             <span class="prog-kicker"><?= e($prog['tag']) ?></span>
             <h4 class="font-heading font-bold text-ink leading-snug mt-2"><?= e($prog['name']) ?></h4>
-            <p class="mt-2 text-sm leading-6 text-slate-500"><?= e($prog['desc']) ?></p>
+            <p class="mt-2 text-sm leading-6 text-slate-500 text-justify"><?= e($prog['desc']) ?></p>
             <span class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-scotsaBlue">
                 View Course Structure
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
