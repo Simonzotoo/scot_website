@@ -12,30 +12,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save') {
         $id = (int) ($_POST['id'] ?? 0);
         $title = clean_text($_POST['title'] ?? '');
+        $audience = clean_text($_POST['audience'] ?? '') ?: 'All Students';
         $sortOrder = (int) ($_POST['sort_order'] ?? 0);
         $status = in_array($_POST['status'] ?? '', ['active', 'archived'], true) ? $_POST['status'] : 'active';
 
         try {
             $filePath = null;
             $fileSize = null;
+            $previewPath = null;
             if (!empty($_FILES['document']['name'])) {
                 $result = handle_document_upload($_FILES['document']);
                 $filePath = $result['path'];
                 $fileSize = $result['size'];
+                $previewPath = $result['preview'];
             }
 
             if ($id > 0) {
                 if ($filePath !== null) {
-                    $old = db()->prepare('SELECT file_path FROM documents WHERE id = ?');
+                    $old = db()->prepare('SELECT file_path, preview_path FROM documents WHERE id = ?');
                     $old->execute([$id]);
-                    if ($oldPath = $old->fetchColumn()) {
-                        delete_media_file($oldPath, 'documents');
+                    if ($oldRow = $old->fetch()) {
+                        delete_media_file($oldRow['file_path'], 'documents');
+                        delete_media_file($oldRow['preview_path'], 'documents');
                     }
-                    db()->prepare('UPDATE documents SET title=?, file_path=?, file_size=?, sort_order=?, status=? WHERE id=?')
-                        ->execute([$title, $filePath, $fileSize, $sortOrder, $status, $id]);
+                    db()->prepare('UPDATE documents SET title=?, audience=?, file_path=?, preview_path=?, file_size=?, sort_order=?, status=? WHERE id=?')
+                        ->execute([$title, $audience, $filePath, $previewPath, $fileSize, $sortOrder, $status, $id]);
                 } else {
-                    db()->prepare('UPDATE documents SET title=?, sort_order=?, status=? WHERE id=?')
-                        ->execute([$title, $sortOrder, $status, $id]);
+                    db()->prepare('UPDATE documents SET title=?, audience=?, sort_order=?, status=? WHERE id=?')
+                        ->execute([$title, $audience, $sortOrder, $status, $id]);
                 }
                 flash('success', 'Document updated.');
             } else {
@@ -44,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: ' . BASE_URL . '/admin/documents.php');
                     exit;
                 }
-                db()->prepare('INSERT INTO documents (title, file_path, file_size, sort_order, status) VALUES (?, ?, ?, ?, ?)')
-                    ->execute([$title, $filePath, $fileSize, $sortOrder, $status]);
+                db()->prepare('INSERT INTO documents (title, audience, file_path, preview_path, file_size, sort_order, status) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                    ->execute([$title, $audience, $filePath, $previewPath, $fileSize, $sortOrder, $status]);
                 flash('success', 'Document added.');
             }
         } catch (UploadException $e) {
@@ -53,10 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'delete') {
         $id = (int) ($_POST['id'] ?? 0);
-        $old = db()->prepare('SELECT file_path FROM documents WHERE id = ?');
+        $old = db()->prepare('SELECT file_path, preview_path FROM documents WHERE id = ?');
         $old->execute([$id]);
-        if ($oldPath = $old->fetchColumn()) {
-            delete_media_file($oldPath, 'documents');
+        if ($oldRow = $old->fetch()) {
+            delete_media_file($oldRow['file_path'], 'documents');
+            delete_media_file($oldRow['preview_path'], 'documents');
         }
         db()->prepare('DELETE FROM documents WHERE id = ?')->execute([$id]);
         flash('success', 'Document deleted.');
@@ -100,12 +105,20 @@ $formatBytes = static function (int $bytes): string {
             <input class="admin-input" type="text" name="title" value="<?= e($editing['title'] ?? '') ?>" required>
         </div>
         <div class="admin-form-row">
+            <label>Who is this for?</label>
+            <input class="admin-input" type="text" name="audience" value="<?= e($editing['audience'] ?? 'All Students') ?>" placeholder="e.g. MSc Students, BSc Students, All Students">
+            <p class="admin-hint">Shown as a badge on the public Downloads page — be specific if this doesn't apply to everyone.</p>
+        </div>
+        <div class="admin-form-row">
             <label>File <?= $editing ? '(leave blank to keep current)' : '' ?></label>
             <input class="admin-input" type="file" name="document" accept=".pdf,.doc,.docx" <?= $editing ? '' : 'required' ?>>
             <?php if ($editing): ?>
             <p class="admin-hint">Current file: <?= e(basename($editing['file_path'])) ?> (<?= $formatBytes((int) $editing['file_size']) ?>)</p>
+            <?php if ($editing['preview_path']): ?>
+            <img src="<?= BASE_URL ?>/assets/<?= e($editing['preview_path']) ?>" alt="" style="margin-top:.5rem; width:90px; border-radius:.5rem; border:1px solid var(--border);">
             <?php endif; ?>
-            <p class="admin-hint">PDF or Word documents, up to 20MB.</p>
+            <?php endif; ?>
+            <p class="admin-hint">PDF or Word documents, up to 20MB. PDFs get an automatic preview thumbnail.</p>
         </div>
         <div class="admin-form-row">
             <label>Sort Order</label>
@@ -129,11 +142,12 @@ $formatBytes = static function (int $bytes): string {
 <div class="admin-card">
     <h2>All Documents (<?= count($documents) ?>)</h2>
     <table class="admin-table">
-        <thead><tr><th>Title</th><th>Size</th><th>Order</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Title</th><th>Audience</th><th>Size</th><th>Order</th><th>Status</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($documents as $d): ?>
         <tr>
             <td><?= e($d['title']) ?></td>
+            <td><?= e($d['audience']) ?></td>
             <td><?= $formatBytes((int) $d['file_size']) ?></td>
             <td><?= (int) $d['sort_order'] ?></td>
             <td><span class="admin-badge admin-badge-<?= e($d['status']) ?>"><?= e($d['status']) ?></span></td>
