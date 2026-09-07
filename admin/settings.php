@@ -12,6 +12,14 @@ const SETTINGS_FIELDS = [
     'Admissions' => [
         ['apply_now_url', 'Apply Now Button Link', 'text'],
     ],
+    'Eligibility (Programmes page)' => [
+        ['eligibility_wassce_title', 'Card 1 Title', 'text'],
+        ['eligibility_wassce_body', 'Card 1 Body', 'textarea'],
+        ['eligibility_mature_title', 'Card 2 Title', 'text'],
+        ['eligibility_mature_body', 'Card 2 Body', 'textarea'],
+        ['eligibility_others_title', 'Card 3 Title', 'text'],
+        ['eligibility_others_body', 'Card 3 Body', 'textarea'],
+    ],
     'About Section' => [
         ['about_paragraph_1', 'Paragraph 1', 'textarea'],
         ['about_paragraph_2', 'Paragraph 2', 'textarea'],
