@@ -258,11 +258,60 @@ function delete_media_file(?string $relativePath, string $baseDir = 'images'): v
     if ($relativePath === null || $relativePath === '') {
         return;
     }
-    $root = $baseDir === 'videos'
-        ? dirname(__DIR__) . '/assets/videos/'
-        : dirname(__DIR__) . '/assets/images/';
+    $roots = [
+        'videos'    => dirname(__DIR__) . '/assets/videos/',
+        'documents' => dirname(__DIR__) . '/assets/documents/',
+        'images'    => dirname(__DIR__) . '/assets/images/',
+    ];
+    $root = $roots[$baseDir] ?? $roots['images'];
     $full = $root . ltrim($relativePath, '/');
     if (is_file($full)) {
         @unlink($full);
     }
+}
+
+const UPLOAD_MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
+
+/**
+ * Downloadable documents (academic calendar, timetables, etc.) — no
+ * image/video processing needed, just MIME-sniff validation and a move
+ * into assets/documents/ under a random filename (never the visitor's
+ * original filename, same reasoning as handle_image_upload).
+ *
+ * @return array{path: string, size: int}
+ */
+function handle_document_upload(array $file): array
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        throw new UploadException('Upload failed (error code ' . ($file['error'] ?? -1) . ').');
+    }
+    if (($file['size'] ?? 0) > UPLOAD_MAX_DOCUMENT_BYTES) {
+        throw new UploadException('File is too large (max 20MB).');
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime  = $finfo->file($file['tmp_name']);
+    $allowedExtensions = [
+        'application/pdf' => 'pdf',
+        'application/msword' => 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+    ];
+    if (!isset($allowedExtensions[$mime])) {
+        throw new UploadException('Unsupported file type. Use PDF or Word documents.');
+    }
+
+    $destDir = dirname(__DIR__) . '/assets/documents';
+    if (!is_dir($destDir) && !mkdir($destDir, 0755, true) && !is_dir($destDir)) {
+        throw new UploadException('Could not create the destination folder.');
+    }
+
+    $filename = bin2hex(random_bytes(8)) . '.' . $allowedExtensions[$mime];
+    $destPath = $destDir . '/' . $filename;
+
+    if (!move_uploaded_file($file['tmp_name'], $destPath)) {
+        throw new UploadException('Could not save the uploaded file.');
+    }
+    chmod($destPath, 0644);
+
+    return ['path' => 'documents/' . $filename, 'size' => (int) filesize($destPath)];
 }
