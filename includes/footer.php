@@ -111,7 +111,18 @@ require_once __DIR__ . '/nav.php';
 
     <!-- Bottom bar -->
     <div class="border-t py-5 text-center text-xs" style="border-color:rgba(255,255,255,.08); color:rgba(191,219,254,.40);">
-        &copy; <?= date('Y') ?> School of Computing and Technology (SCOT), WIUC. All rights reserved.
+        <p>&copy; <?= date('Y') ?> School of Computing and Technology (SCOT), WIUC. All rights reserved.</p>
+        <p class="mt-1.5">
+            A school of
+            <a href="https://wiuc-ghana.edu.gh/" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-1 font-semibold transition-colors duration-150 hover:text-white underline underline-offset-2 decoration-transparent hover:decoration-current"
+               style="color:rgba(191,219,254,.60);">
+                Wisconsin International University College, Ghana
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+            </a>
+        </p>
     </div>
 </footer>
 
