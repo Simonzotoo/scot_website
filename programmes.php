@@ -42,7 +42,7 @@ function scot_load_programmes(PDO $pdo): array
             $courses = ['core' => [], 'elective' => []];
             foreach ($rows as $c) {
                 if (isset($courses[$c['group_label']])) {
-                    $courses[$c['group_label']][] = $c['title'];
+                    $courses[$c['group_label']][] = [$c['code'], $c['title']];
                 }
             }
             $entry['courses'] = $courses;
@@ -222,8 +222,8 @@ require_once __DIR__ . '/includes/header.php';
             <div class="mb-7">
                 <h5 class="font-heading font-black text-ink text-sm uppercase tracking-wide mb-3"><?= $groupLabel ?></h5>
                 <ul class="space-y-1.5">
-                    <?php foreach ($prog['courses'][$group] as $courseName): ?>
-                    <li class="text-sm text-slate-600"><?= e($courseName) ?></li>
+                    <?php foreach ($prog['courses'][$group] as [$code, $title]): ?>
+                    <li class="text-sm text-slate-600"><?php if ($code !== ''): ?><span class="font-bold text-scotsaBlue"><?= e($code) ?></span> &mdash; <?php endif; ?><?= e($title) ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>

@@ -212,19 +212,72 @@ try {
     }
     echo "programs (undergraduate/diploma): " . count($undergraduate) . " rows\n";
 
+    // MSc course structures — transcribed from the School's official
+    // "Mounted Courses" listings (WIUC MIS, faculty 4). Each course is a
+    // [code, title] pair; within Core/Elective they run first-semester
+    // (600L) courses before second-semester (600U), then by code.
     $postgraduate = [
         ['name' => 'Cybersecurity and Digital Forensics', 'code' => 'MSCCSDF',
             'desc' => 'Develops critical skills to analyse and solve cyber security problems, covering the legal, ethical, and technical dimensions of designing and securing modern IT systems.',
-            'core' => ['Research Methods and Professional Practice','Operating Systems Theory and Applications','Interactive Programming with Python','Cyber Security and Forensics','Computer Networking Theory, Technologies & Protocols','Data Structures and Complexities of Algorithms','Artificial Intelligence and Machine Learning','Computer Networks and Systems Security','Seminar'],
-            'elective' => ['Data Recovery and Digital Forensics Analysis','Ethical Hacking and Penetration Testing','Cryptography Theory and Applications','Information Security','Cyber Intelligence Analysis and Modelling','Mobile Systems Forensics']],
+            'core' => [
+                ['WMCS603', 'Interactive Programming with Python'],
+                ['WMIT601', 'Research Methods and Professional Practice'],
+                ['WMIT605', 'Computer Networking Theory, Technologies & Protocols'],
+                ['WMIT607', 'Artificial Intelligence and Machine Learning'],
+                ['WMCS602', 'Operating Systems Theory and Applications'],
+                ['WMCS604', 'Cyber Security and Forensics'],
+                ['WMCS608', 'Computer Networks and Systems Security'],
+                ['WMIT600', 'Project Work'],
+                ['WMIT608', 'Data Structures and Complexities of Algorithms'],
+                ['WMIT610', 'Seminar'],
+            ],
+            'elective' => [
+                ['WMCS609', 'Data Recovery and Digital Forensics Analysis'],
+                ['WMCS611', 'Ethical Hacking and Penetration Testing'],
+                ['WMCS612', 'Cryptography Theory & Applications'],
+                ['WMCS616', 'Mobile Systems Forensics'],
+            ]],
         ['name' => 'Business Computing', 'code' => 'MSCBC',
             'desc' => 'Combines computing expertise with business strategy, equipping graduates to design, evaluate, and implement IT-driven solutions across modern organisations.',
-            'core' => ['Research Methods and Professional Practice','Business Information Systems','Programming for Business Applications','Database Management Systems','Management Information Systems','Data Analytics for Business','Enterprise Systems and Digital Transformation','Project Management for Computing','Seminar'],
-            'elective' => ['Business Intelligence and Decision Support Systems','E-Commerce and Digital Business','Information Systems Strategy and Governance','Software Engineering for Business Applications','Human-Computer Interaction','Cloud Computing for Business']],
+            'core' => [
+                ['WMBC605', 'Business Process Analysis and Design'],
+                ['WMIT601', 'Research Methods and Professional Practice'],
+                ['WMIT605', 'Computer Networking Theory, Technologies & Protocols'],
+                ['WMIT607', 'Artificial Intelligence and Machine Learning'],
+                ['WMBC602', 'IT Project Management'],
+                ['WMBC606', 'Supply Chain Integration Technologies'],
+                ['WMBC608', 'Technology Entrepreneurship and Innovations'],
+                ['WMBC612', 'Information Security Management'],
+                ['WMIT600', 'Project Work'],
+                ['WMIT610', 'Seminar'],
+            ],
+            'elective' => [
+                ['WMBC613', 'Big Data Analytics'],
+                ['WMIT609', 'Advanced Database Management Systems'],
+                ['WMBC614', 'Business Intelligence'],
+                ['WMIT606', 'Management Information Systems'],
+            ]],
         ['name' => 'Information Technology', 'code' => 'MSCIT',
             'desc' => 'Advanced knowledge across web technologies, mobile computing, machine learning, data management, cybersecurity, and cloud computing, paired with real-world problem-solving practice.',
-            'core' => ['Research Methods and Professional Practice','Advanced Programming Concepts with Java','Computer Networking Theory, Technologies & Protocols','Artificial Intelligence and Machine Learning','Operating Systems Theory and Applications','Advanced Computer Networks','Management Information Systems','Data Structures and Complexities of Algorithms','Seminar'],
-            'elective' => ['Advanced Database Management Systems','Computer Systems & Architecture','Ethical Hacking, Data Recovery and Penetration Testing','Cyber Security & Forensics','Multimedia Systems and Image Processing','Advanced Software and Engineering']],
+            'core' => [
+                ['WMIT601', 'Research Methods and Professional Practice'],
+                ['WMIT603', 'Advanced Programming Concepts with Java'],
+                ['WMIT605', 'Computer Networking Theory, Technologies & Protocols'],
+                ['WMIT607', 'Artificial Intelligence and Machine Learning'],
+                ['WMBC602', 'IT Project Management'],
+                ['WMIT600', 'Project Work'],
+                ['WMIT602', 'Operating Systems Theory and Administration'],
+                ['WMIT604', 'Advanced Computer Networks'],
+                ['WMIT606', 'Management Information Systems'],
+                ['WMIT608', 'Data Structures and Complexities of Algorithms'],
+                ['WMIT610', 'Seminar'],
+            ],
+            'elective' => [
+                ['WMIT609', 'Advanced Database Management Systems'],
+                ['WMIT613', 'Ethical Hacking, Data Recovery and Penetration Testing'],
+                ['WMCS604', 'Cyber Security and Forensics'],
+                ['WMIT616', 'Advanced Software Engineering'],
+            ]],
     ];
     foreach ($postgraduate as $p) {
         $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $p['code']));
@@ -232,8 +285,8 @@ try {
         $programId = (int) $pdo->lastInsertId();
         $courseSort = 0;
         foreach (['core', 'elective'] as $group) {
-            foreach ($p[$group] as $title) {
-                $courseStmt->execute([$programId, null, null, $group, $courseSort++, '', $title]);
+            foreach ($p[$group] as [$code, $title]) {
+                $courseStmt->execute([$programId, null, null, $group, $courseSort++, $code, $title]);
             }
         }
     }
