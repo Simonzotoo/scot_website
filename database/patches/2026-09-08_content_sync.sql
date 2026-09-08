@@ -1,12 +1,14 @@
 -- ============================================================================
 --  SCOT — production DB content sync (2026-09-08)
 --
---  Brings the LIVE (Hostinger) database in line with three content changes
+--  Brings the LIVE (Hostinger) database in line with content changes
 --  that are already deployed in code and files but not in the database:
 --
 --    1. Emmanuel Junior Tapany's education entries (institutions, no years)
 --    2. The three MSc programmes' course structures (official titles + codes)
 --    3. The three MSc course-structure PDFs on the Downloads page
+--    4. Dr. Richard Amankwah's faculty profile (bio, portfolio, research
+--       interest, publications, education)
 --
 --  HOW TO RUN
 --    Hostinger  ->  hPanel  ->  Databases  ->  phpMyAdmin
@@ -126,6 +128,57 @@ INSERT INTO documents (title, audience, file_path, preview_path, file_size, sort
 ('MSc Cybersecurity & Digital Forensics — Course Structure', 'MSc Students', 'documents/msc-cybersecurity-course-structure.pdf',       'documents/previews/msc-cybersecurity-course-structure.jpg',       78809, @doc_sort + 3, 'active');
 
 
+-- ── 4. Faculty profile — Dr. Richard Amankwah ──────────────────────────────
+--     Matched by name. CHAR(10) is a newline (bio paragraph break).
+
+UPDATE team_members SET
+    portfolio = 'Computer Scientist & Software Security Researcher',
+    research_interest = 'Software vulnerability detection and severity prediction, web application security, software defect prediction using Bellwether analysis, and machine-learning approaches for secure and reliable software systems.',
+    bio = CONCAT(
+        'Dr. Richard Amankwah is the Head of the Information Technology Department at the School of Computing and Technology, where he oversees the BSc Information Technology and Diploma in Information Technology programmes, curriculum development, and student research supervision.', CHAR(10), CHAR(10),
+        'He holds a PhD in Computer Application Technology from Jiangsu University, China, where his doctoral research focused on software vulnerability detection and severity prediction. He earned an MSc in Information Technology from Sikkim Manipal University, India, and a BEd in Information Technology from the University of Education, Winneba.', CHAR(10), CHAR(10),
+        'Dr. Amankwah brings more than two decades of teaching experience across Ghanaian universities and colleges of education, spanning undergraduate and postgraduate computer science and information technology, and has supervised numerous undergraduate and graduate research projects. He has served for many years as a Chief Examiner with the West African Examinations Council (WAEC) and has contributed to test-item development for the National Teaching Council''s Ghana Teacher Licensure Examination.', CHAR(10), CHAR(10),
+        'His research centres on software security — vulnerability detection methods and tools, the severity assessment of vulnerabilities reported by open-source and commercial web scanners, and the use of Bellwether analysis to predict vulnerable software components. His work has appeared in peer-reviewed journals and been presented at international venues including the IEEE International Conference on Trust, Security and Privacy in Computing and Communications and the ECOOP/ISSTA Doctoral Symposium. His broader professional background spans IT infrastructure, consultancy, data science, and cyber-security management, and he is a recipient of the T-TEL Challenge Fund award.'
+    )
+ WHERE name = 'Dr. Richard Amankwah';
+
+DELETE fp
+  FROM faculty_publications fp
+  JOIN team_members tm ON tm.id = fp.member_id
+ WHERE tm.name = 'Dr. Richard Amankwah';
+
+INSERT INTO faculty_publications (member_id, text_value, sort_order)
+SELECT tm.id, v.text_value, v.sort_order
+  FROM team_members tm
+  JOIN (
+              SELECT 'Amankwah, R., Chen, J., Kudjo, P. K., & Towey, D. (2020). An empirical comparison of commercial and open-source web vulnerability scanners.' AS text_value, 0 AS sort_order
+    UNION ALL SELECT 'Amankwah, R., Chen, J., Kudjo, P. K., Agyemang, B. K., & Amponsah, A. A. (2020). An automated framework for evaluating open-source web scanner vulnerability severity.', 1
+    UNION ALL SELECT 'Amankwah, R., Chen, J., Mensah, S., & Kudjo, P. K. (2020). The effect of Bellwether analysis on software vulnerability severity prediction models.', 2
+    UNION ALL SELECT 'Amankwah, R., Chen, J., Amponsah, A. A., Ocran, V., & Anang, C. O. (2020). Fast bug detection algorithm for identifying potential vulnerabilities in Juliet test cases.', 3
+    UNION ALL SELECT 'Amankwah, R., Agyeman, B. K., Mensah, K., Brew, B., & Antwi, S. Y. (2018). An integrated approach for detecting security vulnerabilities in web applications: a theoretical perspective.', 4
+    UNION ALL SELECT 'Amankwah, R., Chen, J., & Mensah, S. (2018). Predicting vulnerable software components via Bellwethers.', 5
+    UNION ALL SELECT 'Amankwah, R., & Antwi, S. Y. (2017). Evaluation of software vulnerability detection methods and tools: a review.', 6
+    UNION ALL SELECT 'Ben-Bright, B., Zhan, Y., Ghansah, B., Amankwah, R., et al. (2017). Taxonomy and a theoretical model for feedforward neural networks.', 7
+    UNION ALL SELECT 'Adjardjah, W., Amankwah, R., Okine, A. A., et al. (2017). A fuzzy logic QoE enhancement VHO scheme for VLC-RF HetNet in an indoor environment.', 8
+       ) v
+ WHERE tm.name = 'Dr. Richard Amankwah';
+
+DELETE fe
+  FROM faculty_education fe
+  JOIN team_members tm ON tm.id = fe.member_id
+ WHERE tm.name = 'Dr. Richard Amankwah';
+
+INSERT INTO faculty_education (member_id, text_value, sort_order)
+SELECT tm.id, v.text_value, v.sort_order
+  FROM team_members tm
+  JOIN (
+              SELECT 'PhD Computer Application Technology, Jiangsu University, China' AS text_value, 0 AS sort_order
+    UNION ALL SELECT 'MSc Information Technology, Sikkim Manipal University, India', 1
+    UNION ALL SELECT 'BEd Information Technology, University of Education, Winneba', 2
+       ) v
+ WHERE tm.name = 'Dr. Richard Amankwah';
+
+
 COMMIT;
 
 -- ── Quick check (optional) ─────────────────────────────────────────────────
@@ -134,3 +187,6 @@ COMMIT;
 -- SELECT p.slug, c.group_label, c.code, c.title FROM courses c JOIN programs p ON p.id = c.program_id
 --  WHERE p.tag = 'MSc' ORDER BY p.slug, c.sort_order;
 -- SELECT title, file_path, sort_order FROM documents ORDER BY sort_order;
+-- SELECT portfolio, research_interest, bio FROM team_members WHERE name = 'Dr. Richard Amankwah';
+-- SELECT text_value FROM faculty_publications fp JOIN team_members tm ON tm.id = fp.member_id
+--  WHERE tm.name = 'Dr. Richard Amankwah' ORDER BY fp.sort_order;
