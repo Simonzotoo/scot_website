@@ -1533,6 +1533,65 @@ canvas { display: block; max-width: 100%; }
 }
 
 /* ═══════════════════════════════════════════════════════════
+   PARENT-UNIVERSITY BAR — full-bleed strip above the nav that
+   links out to the main WIUC Ghana site. Styled here rather than
+   with utilities because the site's compiled Tailwind build has a
+   fixed class set (no arbitrary values / fine-grained gaps).
+════════════════════════════════════════════════════════════ */
+.parent-site-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem 0.4rem;
+    padding: 0.55rem 1rem;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: .01em;
+    background: var(--royal-deep);
+    color: rgba(191, 219, 254, .92);
+    transition: background 160ms ease, color 160ms ease;
+}
+.parent-site-bar:hover {
+    background: var(--royal);
+    color: #fff;
+}
+.parent-site-bar__label {
+    opacity: .8;
+}
+.parent-site-bar__name {
+    text-decoration: underline;
+    text-decoration-color: rgba(212, 175, 55, .55);
+    text-underline-offset: 2px;
+}
+.parent-site-bar:hover .parent-site-bar__name {
+    text-decoration-color: var(--gold);
+}
+.parent-site-bar__icon {
+    display: inline-block;
+    height: .8rem;
+    width: .8rem;
+    margin-left: .25rem;
+    vertical-align: -2px;
+    transition: transform 160ms ease;
+}
+.parent-site-bar:hover .parent-site-bar__icon {
+    transform: translateX(2px);
+}
+@media (max-width: 380px) {
+    .parent-site-bar { font-size: .72rem; }
+}
+[data-theme="dark"] .parent-site-bar {
+    background: #060f22;
+}
+[data-theme="dark"] .parent-site-bar:hover {
+    background: var(--royal-deep);
+}
+
+/* ═══════════════════════════════════════════════════════════
    LOADING BAR — thin progress indicator across the very top of
    the viewport while the page's critical assets finish loading.
    Driven by assets/js/loading-bar.js; respects reduced-motion.
