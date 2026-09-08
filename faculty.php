@@ -45,6 +45,13 @@ $lecturers = array_map(
     static fn (array $r) => scot_load_faculty_member($pdo, $r),
     $pdo->query("SELECT * FROM team_members WHERE roster='faculty' ORDER BY sort_order")->fetchAll()
 );
+// Faculty Office staff (Faculty Officer + Deputy) — administrative, not
+// academic, so these render as plain name/role/photo cards rather than
+// the clickable five-tab profile the heads and lecturers get.
+$officers = array_map(
+    static fn (array $r) => scot_load_faculty_member($pdo, $r),
+    $pdo->query("SELECT * FROM team_members WHERE roster='officer' ORDER BY sort_order")->fetchAll()
+);
 
 $activePage = 'faculty';
 $pageTitle = 'Faculty — School of Computing and Technology, WIUC Ghana';
@@ -212,6 +219,36 @@ require_once __DIR__ . '/includes/header.php';
         <p class="text-sm text-slate-400 leading-6">
             Full lecturer profiles for the School of Computing and Technology will appear here once published.
         </p>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($officers): ?>
+    <!-- Faculty Office — administrative staff, shown as plain cards -->
+    <div class="mt-16 mb-6 text-center fade-in">
+        <span class="eyebrow">Faculty Office</span>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 max-w-2xl mx-auto">
+        <?php foreach ($officers as $officer):
+            $officerName  = $officer['name'] ?: 'Awaiting Appointment';
+            $officerPhoto = $officer['photo'] ? IMAGES_URL . '/' . $officer['photo'] : avatar_url(null, $officerName);
+        ?>
+        <div class="card-hover rounded-2xl border border-slate-200 bg-white overflow-hidden fade-in">
+            <div class="relative overflow-hidden bg-slate-100" style="padding-top:115%;">
+                <img src="<?= e($officerPhoto) ?>" alt="<?= e($officerName) ?>"
+                     class="absolute inset-0 h-full w-full object-cover"
+                     style="object-position:50% 15%;"
+                     loading="lazy"
+                     data-fallback="<?= IMAGES_URL ?>/placeholders/avatar.svg">
+            </div>
+            <div class="p-5 text-center">
+                <p class="font-heading font-bold text-ink text-sm"><?= e($officerName) ?></p>
+                <p class="mt-1 text-xs font-semibold text-scotsaBlue"><?= e($officer['role']) ?></p>
+                <?php if ($officer['email']): ?>
+                <a href="mailto:<?= e($officer['email']) ?>" class="mt-1.5 inline-block text-xs text-slate-400 hover:text-scotsaBlue transition-colors break-all"><?= e($officer['email']) ?></a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endforeach; ?>
     </div>
     <?php endif; ?>
     </div>

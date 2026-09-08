@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'save') {
         $id = (int) ($_POST['id'] ?? 0);
-        $roster = in_array($_POST['roster'] ?? '', ['leadership', 'faculty'], true) ? $_POST['roster'] : 'faculty';
+        $roster = in_array($_POST['roster'] ?? '', ['leadership', 'faculty', 'officer'], true) ? $_POST['roster'] : 'faculty';
         $role = clean_text($_POST['role'] ?? '');
         $name = clean_text($_POST['name'] ?? '');
         $email = clean_text($_POST['email'] ?? '') ?: null;
@@ -138,6 +138,7 @@ function repeater_field(string $name, string $label, array $values): void
             <select class="admin-select" name="roster">
                 <option value="leadership" <?= ($editing['roster'] ?? '') === 'leadership' ? 'selected' : '' ?>>Dean & Heads of Department</option>
                 <option value="faculty" <?= ($editing['roster'] ?? 'faculty') === 'faculty' ? 'selected' : '' ?>>Lecturers</option>
+                <option value="officer" <?= ($editing['roster'] ?? '') === 'officer' ? 'selected' : '' ?>>Faculty Office</option>
             </select>
         </div>
         <div class="admin-form-row">
@@ -202,7 +203,7 @@ function repeater_field(string $name, string $label, array $values): void
             <td><?php if ($m['photo_path']): ?><img class="thumb" src="<?= IMAGES_URL ?>/<?= e($m['photo_path']) ?>" alt=""><?php endif; ?></td>
             <td><?= e($m['name'] ?: 'Awaiting Appointment') ?></td>
             <td><?= e($m['role']) ?></td>
-            <td><?= $m['roster'] === 'leadership' ? 'Dean & Heads' : 'Lecturers' ?></td>
+            <td><?= ['leadership' => 'Dean & Heads', 'officer' => 'Faculty Office'][$m['roster']] ?? 'Lecturers' ?></td>
             <td class="admin-table-actions">
                 <a class="admin-btn admin-btn-sm admin-btn-secondary" href="?edit=<?= $m['id'] ?>">Edit</a>
                 <form method="post" data-confirm="Delete this faculty member?">
