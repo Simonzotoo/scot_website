@@ -439,6 +439,16 @@ try {
     }
     echo "team_members (lecturers): " . count($lecturers) . " rows\n";
 
+    // Faculty Office — administrative staff (name / role / photo / email only)
+    $officers = [
+        ['role' => 'Faculty Officer', 'name' => 'Madam Edith', 'email' => null, 'photo' => null],
+        ['role' => 'Deputy Faculty Officer', 'name' => 'Provo Glabu', 'email' => 'provo.glabu@wiuc-ghana.edu.gh', 'photo' => 'faculty/faculty-officer-provo-glabu.jpg'],
+    ];
+    foreach ($officers as $i => $o) {
+        seed_member($pdo, $memberStmt, $ctStmt, $pubStmt, $eduStmt, 'officer', $o, $i);
+    }
+    echo "team_members (faculty office): " . count($officers) . " rows\n";
+
     // ── facilities ────────────────────────────────────────────────────
     $facilities = [
         ['labs/lab-computing-room-1.jpg', 'Cybersecurity Lab', 1],
