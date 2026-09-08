@@ -71,6 +71,13 @@ $applyNowUrl = $setting('apply_now_url', '#');
 
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
+<!-- ── Parent-university bar — a clear way back out to the main
+     WIUC Ghana site, shown above the nav on every page ─────────── -->
+<a href="https://wiuc-ghana.edu.gh/" target="_blank" rel="noopener" class="parent-site-bar">
+    <span class="parent-site-bar__label">Part of</span>
+    <span class="parent-site-bar__name">Wisconsin International University College, Ghana<svg class="parent-site-bar__icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></span>
+</a>
+
 <!-- ── Header — persistent nav across every page ──────────────── -->
 <header class="site-header sticky top-0 z-40 border-b border-slate-200/70 dark:border-white/[.08] bg-white/95 dark:bg-[#0b1120]/95 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
